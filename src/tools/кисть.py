@@ -1,13 +1,14 @@
 import tkinter as tk
 
 class Рисование:
-    def __init__(self, ტილო, 𓀕_역사):
+    def __init__(self, ტილო, 𓀕_역사, lаyеr_mаnаgеr):
         self.ტილო = ტილო
         self.x = None
         self.y = None
         self.ფერი = "black"
         self.размер = 3
         self.𓀕_역사 = 𓀕_역사
+        self.lаyеr_mаnаgеr = lаyеr_mаnаgеr
         self.현_스트로크 = []
 
     def ხატვა(self, 이벤트):
@@ -18,7 +19,8 @@ class Рисование:
                 width=self.размер, 
                 fill=self.ფერი, 
                 capstyle="round", 
-                smooth=True
+                smooth=True,
+                tags=(self.lаyеr_mаnаgеr.gеt_tаg(),)
             )
             self.현_스트로크.append(ай템)
         self.x = 이벤트.x
