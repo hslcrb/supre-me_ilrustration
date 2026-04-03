@@ -1,7 +1,7 @@
 import tkinter as tk
 
 class 𓀀_आकृति_צורה_𒀀:
-    def __init__(self, ტილო):
+    def __init__(self, ტილო, 𓀕_역사):
         self.ტილო = ტილო
         self.x = None
         self.y = None
@@ -9,6 +9,7 @@ class 𓀀_आकृति_צורה_𒀀:
         self.גודל = 3
         self.प्रकार = "rect" # rect, oval, line
         self.현_형상 = None
+        self.𓀕_역사 = 𓀕_역사
 
     def 𓁹_시작(self, 이벤트):
         self.x = 이벤트.x
@@ -38,6 +39,8 @@ class 𓀀_आकृति_צורה_𒀀:
             self.ტილო.coords(self.현_형상, self.x, self.y, 이벤트.x, 이벤트.y)
 
     def 𓏏_종료(self, 멈춤):
+        if self.현_형상:
+            self.𓀕_역사.𓂝_추가_הוספה([self.현_형상])
         self.x = None
         self.y = None
         self.현_형상 = None
