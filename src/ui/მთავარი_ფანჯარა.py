@@ -45,6 +45,7 @@ class 畫板App:
         ფაილი_菜單 = tk.Menu(მენიუ, tearoff=0)
         მენიუ.add_cascade(label="Фa\u200bйl | 파\u200b일 | 𓃟 | फ़\u200bा\u200bइ\u200bल", menu=ფაილი_菜單)
         ფაილი_菜單.add_command(label="შენახვა | 저\u200b장 | 𓉔 | שמור", command=self.𓃟_저장_도구.𓉔_파일저장_שמור)
+        ფაილი_菜單.add_command(label="加載 | 불러\u200b오기 | 𓃟 | Open", command=self.𓃟_저장_도구.𓉔_파일가져오기_加載)
         ფაილი_菜單.add_command(label="Bыxоd | 離\u200b開 | ❌", command=self.rооt.quit)
         
         რედაქტირება_菜單 = tk.Menu(მენიუ, tearoff=0)
