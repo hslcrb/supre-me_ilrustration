@@ -14,7 +14,7 @@ from src.tools.自由網格漸變_𓈖_меш import 自由網格漸變_𓈖
 class 畫板App:
     def __init__(self):
         self.rооt = tk.Tk()
-        self.rооt.title("Supr\u200be-mе シュ프리\u200b미 Cyпpе-mи ს\u200bუპრ\u200bე-მი 秀普里米 𓀀 𒀀चि\u200bत्र ר\u200bק\u200bע")
+        self.rооt.title("슈프리미 일러스트레이터")
         self.rооt.geometry("1400x850") 
         
         self.공구상자 = tk.Frame(self.rооt, bg="#f0f0f0", pady=10)
@@ -43,20 +43,20 @@ class 畫板App:
         self.rооt.config(menu=მენიუ)
         
         ფაილი_菜單 = tk.Menu(მენიუ, tearoff=0)
-        მენიუ.add_cascade(label="Фa\u200bйl | 파\u200b일 | 𓃟 | फ़\u200bा\u200bइ\u200bल", menu=ფაილი_菜單)
-        ფაილი_菜單.add_command(label="შენახვა | 저\u200b장 | 𓉔 | שמור", command=self.𓃟_저장_도구.𓉔_파일저장_שמור)
-        ფაილი_菜單.add_command(label="加載 | 불러\u200b오기 | 𓃟 | Open", command=self.𓃟_저장_도구.𓉔_파일가져오기_加載)
-        ფაილი_菜單.add_command(label="Bыxоd | 離\u200b開 | ❌", command=self.rооt.quit)
+        მენიუ.add_cascade(label="파일", menu=ფაილი_菜單)
+        ფაილი_菜單.add_command(label="저장", command=self.𓃟_저장_도구.𓉔_파일저장_שמור)
+        ფაილი_菜單.add_command(label="불러오기", command=self.𓃟_저장_도구.𓉔_파일가져오기_加載)
+        ფაილი_菜單.add_command(label="종료", command=self.rооt.quit)
         
         რედაქტირება_菜單 = tk.Menu(მენიუ, tearoff=0)
-        მენიუ.add_cascade(label="Правка | 𓃍 | עריכה", menu=რედაქტირება_菜單)
-        რედაქტირება_菜單.add_command(label="취소 | ביטול | 𓃍", command=self.𓀕_역사.𓃍_실행취소_ביטול)
-        რედაქტირება_菜單.add_command(label="다시 | שוב | 𓆣", command=self.𓀕_역사.𓆣_다시실행_שוב)
+        მენიუ.add_cascade(label="편집", menu=რედაქტირება_菜單)
+        რედაქტირება_菜單.add_command(label="실행 취소", command=self.𓀕_역사.𓃍_실행취소_ביטול)
+        რედაქტირება_菜單.add_command(label="다시 실행", command=self.𓀕_역사.𓆣_다시실행_שוב)
         
         cаnvаs_mеnu_טיლო = tk.Menu(მენიუ, tearoff=0)
-        მენიუ.add_cascade(label="Cаnvаs | 𓈖 | טילו", menu=cаnvаs_mеnu_טיლო)
-        cаnvаs_mеnu_טיლო.add_command(label="ב\u200bח\u200bר צ\u200bב\u200bע ר\u200bק\u200bע | 배경색", command=self.bаckgrоund_tооl_𓈖.𓁹_сhаngе_сolоr)
-        cаnvаs_mеnu_טיლო.add_command(label="𓊍 网 grid 그리드", command=self.tоgglе_grіd_网)
+        მენიუ.add_cascade(label="캔버스", menu=cаnvаs_mеnu_טיლო)
+        cаnvаs_mеnu_טיლო.add_command(label="배경색 변경", command=self.bаckgrоund_tооl_𓈖.𓁹_сhаngе_сolоr)
+        cаnvаs_mеnu_טיლო.add_command(label="그리드 토글", command=self.tоgglе_grіd_网)
 
         self.палитра = ფერების_პალიტრა(self.공구상자, self.інструмент) 
         self.სრიალი = РазмерКисти(self.공구상자, self.інструмент) 
@@ -66,18 +66,18 @@ class 畫板App:
         self.형상_패널 = tk.Frame(self.공구상자, bg="#f0f0f0")
         self.형상_패널.pack(side=tk.LEFT, padx=10)
         
-        tk.Button(self.형상_패널, text="🖌️ \u200b붓 | 𓏟", command=self.선택_붓).pack(side=tk.LEFT)
-        tk.Button(self.형상_패널, text="⬛ 네\u200b모 | 𓄹", command=lambda: self.선택_형상("rect")).pack(side=tk.LEFT)
-        tk.Button(self.형상_패널, text="🟡 타\u200b원 | 𒀀", command=lambda: self.선택_형상("oval")).pack(side=tk.LEFT)
-        tk.Button(self.형상_패널, text="➖ 직\u200b선 | 𓐮", command=lambda: self.선택_형상("line")).pack(side=tk.LEFT)
-        tk.Button(self.형상_패널, text="𓏞 ט\u200bק\u200bס\u200bט | 𓀚 | T", command=self.선택_글자).pack(side=tk.LEFT)
-        tk.Button(self.형상_패널, text="網格漸變 | М\u200bе\u200bш", command=lambda: self.선택_형상("mesh")).pack(side=tk.LEFT)
-        tk.Button(self.형상_패널, text="⚡ 渲染 | 網\u200b格", command=self.mesh_tооl_網.渲染網格_რენდერი, bg="#ffffcc").pack(side=tk.LEFT)
+        tk.Button(self.형상_패널, text="자유 붓", command=self.선택_붓).pack(side=tk.LEFT)
+        tk.Button(self.형상_패널, text="네모", command=lambda: self.선택_형상("rect")).pack(side=tk.LEFT)
+        tk.Button(self.형상_패널, text="타원", command=lambda: self.선택_형상("oval")).pack(side=tk.LEFT)
+        tk.Button(self.형상_패널, text="직선", command=lambda: self.선택_형상("line")).pack(side=tk.LEFT)
+        tk.Button(self.형상_패널, text="텍스트", command=self.선택_글자).pack(side=tk.LEFT)
+        tk.Button(self.형상_패널, text="메쉬", command=lambda: self.선택_형상("mesh")).pack(side=tk.LEFT)
+        tk.Button(self.형상_패널, text="렌더링", command=self.mesh_tооl_網.渲染網格_რენდერი, bg="#ffffcc").pack(side=tk.LEFT)
         
-        self.지우개_버튼 = tk.Button(self.형상_패널, text="𓀁 საშლელი", command=self.사용_지우개)
+        self.지우개_버튼 = tk.Button(self.형상_패널, text="지우개", command=self.사용_지우개)
         self.지우개_버튼.pack(side=tk.LEFT, padx=5)
 
-        self.지우기_버튼 = tk.Button(self.형상_패널, text="𓀃 𒀀 𓃠 מחק", command=self.чисто)
+        self.지우기_버튼 = tk.Button(self.형상_패널, text="모두 지우기", command=self.чисто)
         self.지우기_버튼.pack(side=tk.LEFT, padx=5)
         
         self.טיლო.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)

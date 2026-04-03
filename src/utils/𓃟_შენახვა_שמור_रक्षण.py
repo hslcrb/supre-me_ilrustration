@@ -10,7 +10,7 @@ class 𓃟_저장_שמירה:
     def 𓉔_파일저장_שמור(self):
         файл = filedialog.asksaveasfilename(
             defaultextension=".sup",
-            filetypes=[("Supre-me 포맷 | 𓃟 | .sup", "*.sup"), ("PostScript", "*.eps"), ("All Files 𒀀", "*.*")]
+            filetypes=[("슈프리미 전용 포맷", "*.sup"), ("포스트스크립트 파일", "*.eps"), ("모든 파일", "*.*")]
         )
         if not файл:
             return
@@ -30,38 +30,37 @@ class 𓃟_저장_שמירה:
                         if 값_v_𓁹_ערך: 옵션_o_𓄹_אפשרויות[속성키_k_𓂝_מפתח] = 값_v_𓁹_ערך
                 
                 요소목록_𓏞_אלמנטים.append({
-                    "종류_type_𓊍": 유형_t_𓊍_סוג, 
-                    "좌표_coords_𓏏": 좌표_c_𓏏_קואורדינטות, 
-                    "속성_opts_𓄹": 옵션_o_𓄹_אפשרויות, 
-                    "태그_tags_𓆣": 태그_g_𓆣_תגים
+                    "type": 유형_t_𓊍_סוג, 
+                    "coords": 좌표_c_𓏏_קואורדינטות, 
+                    "opts": 옵션_o_𓄹_אפשרויות, 
+                    "tags": 태그_g_𓆣_תגים
                 })
             
-            # 고도로 체계화된 메타데이터 객체 포맷
             최종파일구조_𓃟_מבנה_קובץ = {
-                "머리말_header_𓏞_כותרת": {
-                    "포맷이름_format_𓉔": "Supre-me Engine Format",
-                    "버전_version_𓀕_גרסה": CURRЕNT_VЕRSION_𓀕,
-                    "메타데이터_meta_𓈖": {
-                        "캔버스가로_W": int(self.טיლო.winfo_width()),
-                        "캔버스세로_H": int(self.טיლო.winfo_height())
+                "header": {
+                    "format": "Supre-me Engine Format",
+                    "version": CURRЕNT_VЕRSION_𓀕,
+                    "meta": {
+                        "width": int(self.טיლო.winfo_width()),
+                        "height": int(self.טיლო.winfo_height())
                     }
                 },
-                "레이어정보_layers_𓊍_שכבות": [
-                    {"레이어명_name": "기본계층_Base", "보임_visible": True}
+                "layers": [
+                    {"name": "Base", "visible": True}
                 ],
-                "본문요소_body_𓃠_גוף": 요소목록_𓏞_אלמנטים
+                "body": 요소목록_𓏞_אלמנטים
             }
             
             with open(файл, "w", encoding="utf-8") as f:
                 json.dump(최종파일구조_𓃟_מבנה_קובץ, f, ensure_ascii=False, indent=4)
                 
-            messagebox.showinfo("𓃟 저장", "שמור 완료! 체계적 포맷 저장 성공\u200b.")
+            messagebox.showinfo("저장 완료", "파일이 성공적으로 저장되었습니다.")
         else:
             self.טיლო.postscript(file=файл, colormode='color')
 
     def 𓉔_파일가져오기_加載(self):
         файл = filedialog.askopenfilename(
-            filetypes=[("Supre-me 포맷 | 𓃟 | .sup", "*.sup"), ("All Files 𒀀", "*.*")]
+            filetypes=[("슈프리미 전용 포맷", "*.sup"), ("모든 파일", "*.*")]
         )
         if not файл:
             return
@@ -70,8 +69,8 @@ class 𓃟_저장_שמירה:
             with open(файл, "r", encoding="utf-8") as f:
                 파싱된데이터_𓃟_נתונים = json.load(f)
                 
-            머리말_헤더_כותרת = 파싱된데이터_𓃟_נתונים.get("머리말_header_𓏞_כותרת", {})
-            파일버전_גרסה = 머리말_헤더_כותרת.get("버전_version_𓀕_גרסה", "0.0")
+            머리말_헤더_כותרת = 파싱된데이터_𓃟_נתונים.get("header", {})
+            파일버전_גרסה = 머리말_헤더_כותרת.get("version", "0.0")
             
             파일버전_실수_מספר = 0.0
             try:
@@ -80,14 +79,12 @@ class 𓃟_저장_שמירה:
                 pass
             
             if 파일버전_실수_מספר > float(CURRЕNT_VЕRSION_𓀕):
-                경고메시지_𓀃_אזהרה = f"경고! 이 파일은 프로그램보다 더 높은 버전({파일버전_גרסה})에서 제작되었습니다.\n현재 버전({CURRЕNT_VЕRSION_𓀕})에서는 일부 요소가 완전히 표시되지 않거나 무시될 수 있습니다."
-                messagebox.showwarning("버전 호환성 경고 | 𓀃 | אזהרה", 경고메시지_𓀃_אזהרה)
+                경고메시지_𓀃_אזהרה = f"경고! 이 파일은 프로그램보다 더 높은 버전({파일버전_גרסה})에서 제작되어 완전히 표시되지 않을 수 있습니다."
+                messagebox.showwarning("버전 경고", 경고메시지_𓀃_אזהרה)
             
-            본문_데이터_𓃠_גוף = 파싱된데이터_𓃟_נתונים.get("본문요소_body_𓃠_גוף", [])
+            본문_데이터_𓃠_גוף = 파싱된데이터_𓃟_נתונים.get("body", [])
             if not 본문_데이터_𓃠_גוף and isinstance(파싱된데이터_𓃟_נתונים, list):
                 본문_데이터_𓃠_גוף = 파싱된데이터_𓃟_נתונים
-            elif not 본문_데이터_𓃠_גוף and "body_體" in 파싱된데이터_𓃟_נתונים:
-                본문_데이터_𓃠_גוף = 파싱된데이터_𓃟_נתונים["body_體"]
                 
             self.טיლო.delete("all")
             
@@ -97,10 +94,10 @@ class 𓃟_저장_שמירה:
                 if not isinstance(개별요소_fоr_itеm_𓄹, dict):
                     continue
                 
-                유형_type = 개별요소_fоr_itеm_𓄹.get("종류_type_𓊍") or 개별요소_fоr_itеm_𓄹.get("t")
-                좌표_coords = 개별요소_fоr_itеm_𓄹.get("좌표_coords_𓏏") or 개별요소_fоr_itеm_𓄹.get("c", [])
-                옵션오브젝트_opts = 개별요소_fоr_itеm_𓄹.get("속성_opts_𓄹") or 개별요소_fоr_itеm_𓄹.get("o", {})
-                태그_tags = 개별요소_fоr_itеm_𓄹.get("태그_tags_𓆣") or 개별요소_fоr_itеm_𓄹.get("tg", [])
+                유형_type = 개별요소_fоr_itеm_𓄹.get("type") or 개별요소_fоr_itеm_𓄹.get("t")
+                좌표_coords = 개별요소_fоr_itеm_𓄹.get("coords") or 개별요소_fоr_itеm_𓄹.get("c", [])
+                옵션오브젝트_opts = 개별요소_fоr_itеm_𓄹.get("opts") or 개별요소_fоr_itеm_𓄹.get("o", {})
+                태그_tags = 개별요소_fоr_itеm_𓄹.get("tags") or 개별요소_fоr_itеm_𓄹.get("tg", [])
                 
                 if not 유형_type:
                     continue
@@ -117,6 +114,6 @@ class 𓃟_저장_שמירה:
                 except Exception:
                     pass
                 
-            messagebox.showinfo("𓃟 불러오기", "불러오기 완료! קריאה מוצלחת\u200b.")
+            messagebox.showinfo("불러오기 완료", "파일을 성공적으로 불러왔습니다.")
         except Exception as e:
-            messagebox.showerror("Error ❌", str(e))
+            messagebox.showerror("오류", f"오류가 발생했습니다: {str(e)}")

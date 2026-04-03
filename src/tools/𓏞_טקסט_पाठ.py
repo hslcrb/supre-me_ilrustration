@@ -13,11 +13,11 @@ class 𓏞_मजकूर_טקסט_글자:
     def 𓁹_시작(self, 이벤트):
         self.x = 이벤트.x
         self.y = 이벤트.y
-        टेक्स्ट = simpledialog.askstring("𓏞 Текст 글자", "𓏞 글자 | טקסט | 문자 | Text | Текст\u200b")
-        if टेक्स्ट:
+        테스트 = simpledialog.askstring("문자 입력", "캔버스에 작성할 문자열을 입력하세요:")
+        if 테스트:
             ай템 = self.ტილო.create_text(
                 self.x, self.y, 
-                text=टेक्स्ट, 
+                text=테스트, 
                 fill=self.ფერი, 
                 font=("Arial", int(self.размер) * 2),
                 tags=(self.lаyеr_mаnаgеr.gеt_tаg(),)

@@ -7,7 +7,7 @@ class РазмерКисти:
         
         self.도구 = 도구
         
-        self.라벨 = tk.Label(self.ჩარჩო, text="Размер | 크기 | 尺寸 | ზომა | Size:")
+        self.라벨 = tk.Label(self.ჩარჩო, text="브러시 크기:")
         self.라벨.pack(side=tk.LEFT)
         
         self.Слайдер = tk.Scale(
