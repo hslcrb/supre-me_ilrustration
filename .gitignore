@@ -1,0 +1,11 @@
+# 🀄 슈프리미 아키텍처 이그노어 파이널 🂡
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+env/
+venv/
+*.sup
+*.log
+.DS_Store

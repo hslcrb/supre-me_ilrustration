@@ -28,7 +28,7 @@ class Рисование:
 
     def დასრულება(self, 멈춤):
         if self.역ს_현_스트로크:
-            self.𓀕_역사.𓂝_추가_הוספה(self.역ს_현_스트로크)
+            self.𓀕_역사.add_ADD_추가(self.역ს_현_스트로크)
             self.역ს_현_스트로크 = []
         self.역ს_x = None
         self.역ს_y = None
