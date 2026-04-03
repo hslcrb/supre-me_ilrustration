@@ -1,7 +1,6 @@
-# 🃏 UI Module 🀄
+# 🃏 UI 모듈 🀄
 
-from .მთავარი_ფანჯარა import 畫板App as 🀐_메인화면_मुख्य_🃎
-from .파_파_패_პალიტრა import ფერების_پალიტრა_پ if False else None # Dummy safe import logic
+from .მთავარი_ფანჯარა import 畫板App as 메인화면_मुख्य_ראשי # 🀐 🃎
 
-🃖_유아이생성_निर्माण_🀙 = lambda: "🀫_성공_🃟"
-🀇_렌더링_रेंडर_🂱 = "🂡_UI_READY_🀆"
+유아이생성_निर्माण_יצירה = lambda: "결과_성공" # 🃖 🀙
+렌더링_रेंडर_רינדור = "준비완료_READY" # 🀇 🂱 🂡 🀆

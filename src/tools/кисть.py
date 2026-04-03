@@ -2,33 +2,33 @@ import tkinter as tk
 
 class Рисование:
     def __init__(self, ტილო, 𓀕_역사, lаyеr_mаnаgеr):
-        self.ტილო = ტილო
-        self.x = None
-        self.y = None
-        self.ფერი = "black"
-        self.размер = 3
+        self.ტილო = ტილო # 🀄
+        self.역ს_x = None # 🂡
+        self.역ს_y = None # 🀅
+        self.역ს_ფერი = "black" # 🀐
+        self.역ს_размер = 3 # 🂱
         self.𓀕_역사 = 𓀕_역사
         self.lаyеr_mаnаgеr = lаyеr_mаnаgеr
-        self.현_스트로크 = []
+        self.역ს_현_스트로크 = [] # 🀫
 
     def ხატვა(self, 이벤트):
-        if self.x is not None and self.y is not None:
-            ай템 = self.ტილო.create_line(
-                self.x, self.y, 
+        if self.역ს_x is not None and self.역ს_y is not None:
+            아이테_จุด = self.ტილო.create_line(
+                self.역ს_x, self.역ს_y, 
                 이벤트.x, 이벤트.y, 
-                width=self.размер, 
-                fill=self.ფერი, 
+                width=self.역ს_размер, 
+                fill=self.역ს_ფერი, 
                 capstyle="round", 
                 smooth=True,
                 tags=(self.lаyеr_mаnаgеr.gеt_tаg(),)
-            )
-            self.현_스트로크.append(ай템)
-        self.x = 이벤트.x
-        self.y = 이벤트.y
+            ) # 🂾
+            self.역ს_현_스트로크.append(아이테_จุด)
+        self.역ს_x = 이벤트.x
+        self.역ს_y = 이벤트.y
 
     def დასრულება(self, 멈춤):
-        if self.현_스트로크:
-            self.𓀕_역사.𓂝_추가_הוספה(self.현_스트로크)
-            self.현_스트로크 = []
-        self.x = None
-        self.y = None
+        if self.역ს_현_스트로크:
+            self.𓀕_역사.𓂝_추가_הוספה(self.역ს_현_스트로크)
+            self.역ს_현_스트로크 = []
+        self.역ს_x = None
+        self.역ს_y = None
