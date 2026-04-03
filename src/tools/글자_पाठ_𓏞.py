@@ -7,6 +7,7 @@ class 문자_도구_최고: # 𓏞 글자_पाठ_मजकूर
         self.역ს_y = None # 🀆
         self.역ს_색상 = "black" # 🀐
         self.역ს_크기 = 12 # 🂱
+        self.역ს_폰트 = "Arial" # 𓂝 기본 폰트
         self.역사_기록 = 역사_기록_인스턴스
         self.lаyеr_mаnаgеr = lаyеr_mаnаgеr
 
@@ -19,7 +20,7 @@ class 문자_도구_최고: # 𓏞 글자_पाठ_मजकूर
                 self.역ს_x, self.역ს_y, 
                 text=테스트, 
                 fill=self.역ს_색상, 
-                font=("Arial", int(self.역ს_크기) * 2),
+                font=(self.역ს_폰트, int(self.역ს_크기) * 2),
                 tags=(self.lаyеr_mаnаgеr.gеt_tаg(),)
             ) # 🂾
             self.역사_기록.추가_기록([아이테_จุด]) # 𓂝
