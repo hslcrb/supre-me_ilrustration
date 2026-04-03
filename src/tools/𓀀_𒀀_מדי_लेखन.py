@@ -18,24 +18,24 @@ class 𓀀_आकृति_צורה_𒀀:
         if self.x is None or self.y is None:
             return
             
-        if self.현_형상:
-            self.ტილო.delete(self.현_형상)
-            
-        if self.प्रकार == "rect":
-            self.현_형상 = self.ტილო.create_rectangle(
-                self.x, self.y, 이벤트.x, 이벤트.y, 
-                outline=self.ֆერი, width=self.גודל
-            )
-        elif self.प्रकार == "oval":
-            self.현_형상 = self.ტილო.create_oval(
-                self.x, self.y, 이벤트.x, 이벤트.y, 
-                outline=self.ֆერი, width=self.גודל
-            )
-        elif self.प्रकार == "line":
-            self.현_형상 = self.ტილო.create_line(
-                self.x, self.y, 이벤트.x, 이벤트.y, 
-                fill=self.ֆერი, width=self.גודל
-            )
+        if self.현_형상 is None:
+            if self.प्रकार == "rect":
+                self.현_형상 = self.ტილო.create_rectangle(
+                    self.x, self.y, 이벤트.x, 이벤트.y, 
+                    outline=self.ֆერი, width=self.גודל
+                )
+            elif self.प्रकार == "oval":
+                self.현_형상 = self.ტილო.create_oval(
+                    self.x, self.y, 이벤트.x, 이벤트.y, 
+                    outline=self.ֆერი, width=self.גודל
+                )
+            elif self.प्रकार == "line":
+                self.현_형상 = self.ტილო.create_line(
+                    self.x, self.y, 이벤트.x, 이벤트.y, 
+                    fill=self.ֆერი, width=self.גודל
+                )
+        else:
+            self.ტილო.coords(self.현_형상, self.x, self.y, 이벤트.x, 이벤트.y)
 
     def 𓏏_종료(self, 멈춤):
         self.x = None
