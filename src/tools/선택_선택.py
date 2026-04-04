@@ -18,8 +18,12 @@ class 𝔖선택_최고:   # 𝔖 אבג あいう ሀ ሀ ለ क ข
         self.א_prev_x = 0
         self.א_prev_y = 0
         
-        # ᄠᅳᆮ : ᄆᆞᆽ춤 선을 ᄂᆞᄐᆞᄂᆡᄂᆞᆫ 것이라 (옛한글)
+        # ᄠᅳᆮ : ᄆᆞᆽ춤 선을 ᄂᆞᄐᆞᄂᆡᄂᆞᆫ 것이ᄅ라 (옛한글)
         self.あ_snap_lines = [] # Smart Guides
+
+    def 인스펙터_주입(self, א_inspector):
+        # ᄠᅳᆮ : 도형의 성질을 보이ᄂᆞᆫ 판을 잇ᄂᆞᆫ 것이ᄅ라 (옛한글)
+        self.인스펙터 = א_inspector
 
     def 선택_해제(self):
         self._clear_highlight()
@@ -46,8 +50,11 @@ class 𝔖선택_최고:   # 𝔖 אבג あいう ሀ ሀ ለ क ข
             self.모드 = "move"
             self.א_prev_x, self.א_prev_y = cx, cy
             self._draw_highlight()
+            # ᄠᅳᆮ : 성질 판을 다시 그리ᄂᆞᆫ 것이ᄅ라 (옛한글)
+            if self.인스펙터: self.인스펙터.업데이트_정보(target)
         else:
             self.선택_해제()
+            if self.인스펙터: self.인스펙터.업데이트_정보(None)
             self.모드 = "drag_box"
 
     def 그리기_액션(self, event):
