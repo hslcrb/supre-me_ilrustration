@@ -38,7 +38,7 @@ class 𝔖저장_공간_최고:   # 𝔖 אבג あいう ሀ ሀ ለ क ख
         
         with open(filename, "w", encoding="utf-8") as f:
             json.dump({"body": items, "v": "4.1"}, f)
-        messagebox.showinfo("אבג", "도형이 잘 자바두어졋ᄂᆞ니라 (옛한글)")
+        messagebox.showinfo("알림", "저장이 완료되었습니다.")
 
     def 로드_프로세스(self):
         # ሀ ሀ ለ क kh あいう אבג
@@ -69,9 +69,9 @@ class 𝔖저장_공간_최고:   # 𝔖 אבג あいう ሀ ሀ ለ क ख
                 elif t in ["line", "rectangle", "oval", "text", "polygon"]:
                     getattr(self.ሐ, f"create_{t}")(*coords, **opts, tags=tags)
                 
-            messagebox.showinfo("あいう", "도형을 다시 불러ᄂᆡᆫ 일이 다 되엇ᄂᆞ니라 (옛한글)")
+            messagebox.showinfo("알림", "불러오기가 완료되었습니다.")
         except Exception as e:
-            messagebox.showerror("אבג", f"로드 실패: {str(e)}")
+            messagebox.showerror("오류", f"로드 실패: {str(e)}")
             
     def PNG_내보내기_프로세스(self): pass
     def SVG_내보내기_프로세스(self): pass

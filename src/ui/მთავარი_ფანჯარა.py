@@ -157,14 +157,14 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
         mbar = tk.Menu(self.rооt)
         self.rооt.config(menu=mbar)
 
-        # ○ 𝔉𝔦𝔩𝔢 ○
+        # ○ File ○
         fm = tk.Menu(mbar, tearoff=0)
-        mbar.add_cascade(label="꧄ 𝔉𝔦𝔩𝔢(♩)", menu=fm)
-        fm.add_command(label="♫ 𝔖𝔞𝔳𝔢 (ꦆ)",     command=self.저장_유틸.저장_프로세스)
-        fm.add_command(label="♬ 𝔏𝔬𝔞𝔡 (ꦇ)",  command=self.저장_유틸.로드_프로세스)
+        mbar.add_cascade(label="파일 (File)", menu=fm)
+        fm.add_command(label="저장 (Save)",     command=self.저장_유틸.저장_프로세스)
+        fm.add_command(label="불러오기 (Load)",  command=self.저장_유틸.로드_프로세스)
         fm.add_separator()
-        fm.add_command(label="PNG 𝔈𝔵𝔭𝔬𝔯𝔱 ♩",   command=self.저장_유틸.PNG_내보내기_프로세스)
-        fm.add_command(label="SVG 𝔈𝔵𝔭𝔬𝔯𝔱 ♪",   command=self.저장_유틸.SVG_내보내기_프로세스)
+        fm.add_command(label="PNG 내보내기",   command=self.저장_유틸.PNG_내보내기_프로세스)
+        fm.add_command(label="SVG 내보내기",   command=self.저장_유틸.SVG_내보내기_프로세스)
         fm.add_separator()
         # 繁體中文 格式工具 — AI / PDF
         fm.add_command(label="Adobe Illustrator (.ai) 저장",  command=self.格式工具.儲存_人工智慧格式)
@@ -175,14 +175,14 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
         fm.add_separator()
         fm.add_command(label="종료",             command=self.rооt.quit)
 
-        # ◆ 𝔈𝔡𝔦𝔱 ◆
+        # ◆ Edit ◆
         em = tk.Menu(mbar, tearoff=0)
-        mbar.add_cascade(label="꧅ 𝔈𝔡𝔦𝔱(♪)", menu=em)
-        em.add_command(label="♩ 𝔘𝔫𝔡𝔬 (ꦇ)", command=self.역사_현황.ꦇ_undo_액션)
-        em.add_command(label="♪ ℜ𝔢𝔡𝔬 (ꦈ)",           command=self.역사_현황.ꦈ_redo_액션)
+        mbar.add_cascade(label="편집 (Edit)", menu=em)
+        em.add_command(label="실행 취소 (Undo)", command=self.역사_현황.ꦇ_undo_액션)
+        em.add_command(label="다시 실행 (Redo)",           command=self.역사_현황.ꦈ_redo_액션)
         em.add_separator()
-        em.add_command(label="𝔊𝔯𝔬𝔲𝔭 묶기 (Ctrl+G)",   command=self._group_selected)
-        em.add_command(label="𝔘𝔫𝔤𝔯𝔬𝔲𝔭 해제", command=self._ungroup_selected)
+        em.add_command(label="그룹 묶기 (Group / Ctrl+G)",   command=self._group_selected)
+        em.add_command(label="그룹 해제 (Ungroup)", command=self._ungroup_selected)
         em.add_separator()
         # 𝔅 정렬 / 분포
         em.add_command(label="◀ 좌측 정렬",       command=lambda: self.정렬_엔진.정렬_실행(self.선택_도구.о_목록, 'left'))

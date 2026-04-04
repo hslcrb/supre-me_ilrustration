@@ -20,23 +20,23 @@ class 𝔓특성_UI_최고: # אבג あいう ሀ ሀ ለ क kh
         self.프레임.pack(side=tk.RIGHT, fill=tk.Y)
         self.프레임.pack_propagate(False)
 
-        tk.Label(self.프레임, text="𝔓 𝓘𝓝𝓢𝓟𝓔𝓒𝓣𝓞𝓡 א", bg=_SIDE_BG, fg="#3B82F6", 
+        tk.Label(self.프레임, text="INSPECTOR", bg=_SIDE_BG, fg="#3B82F6", 
                  font=("Fraktur", 12, "bold")).pack(pady=(0, 20), anchor="w")
 
         # א 𝓖𝓔𝓞𝓜𝓔𝓣𝓡𝓨 あ
-        self._add_section("א 𝓖𝓔𝓞𝓜𝓔𝓣𝓡𝓨 あ")
-        self.x_var = self._add_field("X א:", "0")
-        self.y_var = self._add_field("Y あ:", "0")
-        self.w_var = self._add_field("W ሀ:", "0")
-        self.h_var = self._add_field("H क:", "0")
+        self._add_section("GEOMETRY")
+        self.x_var = self._add_field("X:", "0")
+        self.y_var = self._add_field("Y:", "0")
+        self.w_var = self._add_field("W:", "0")
+        self.h_var = self._add_field("H:", "0")
 
         # क 𝓢𝓣𝓨𝓛𝓔 ሀ
-        self._add_section("क 𝓢𝓣𝓨𝓛𝓔 ሀ")
-        self.color_btn = tk.Button(self.프레임, text="🎨 채우기 色 א", bg=_ACCENT, fg="white", 
+        self._add_section("STYLE")
+        self.color_btn = tk.Button(self.프레임, text="🎨 채우기 색상 (Fill)", bg=_ACCENT, fg="white", 
                                    relief=tk.FLAT, command=self._pick_color)
         self.color_btn.pack(fill=tk.X, pady=5)
         
-        self.stroke_btn = tk.Button(self.프레임, text="📏 테두리 色 あ", bg="#374151", fg="white", 
+        self.stroke_btn = tk.Button(self.프레임, text="📏 테두리 색상 (Stroke)", bg="#374151", fg="white", 
                                     relief=tk.FLAT, command=self._pick_stroke)
         self.stroke_btn.pack(fill=tk.X, pady=5)
 
@@ -73,7 +73,7 @@ class 𝔓특성_UI_최고: # אבג あいう ሀ ሀ ለ क kh
 
     def _pick_color(self):
         if not self.현_타겟: return
-        c = colorchooser.askcolor(title=" א부강 א")
+        c = colorchooser.askcolor(title="채우기 색상 선택")
         if c[1]:
             self.ሐ.itemconfig(self.현_타겟, fill=c[1])
             self.color_btn.config(bg=c[1])
@@ -81,7 +81,7 @@ class 𝔓특성_UI_최고: # אבג あいう ሀ ሀ ለ क kh
 
     def _pick_stroke(self):
         if not self.현_타겟: return
-        c = colorchooser.askcolor(title=" ああ あ")
+        c = colorchooser.askcolor(title="테두리 색상 선택")
         if c[1]:
             self.ሐ.itemconfig(self.현_타겟, outline=c[1])
             self.역사.ꦆ_기록_추가("ATTR", [self.현_타겟])

@@ -9,11 +9,11 @@ class 레이어_전개_UI: # אבג あいう ሀ ሀ ለ क ख
         self.역사_현황 = l_manager
         self.부모_fr = p_부모
         
-        # ᄠᅳᆮ : 가ᄋᆡ 판을 ᄆᆡᆼᄀᆞᄂᆞᆫ 것이라 (옛한글)
+        # ᄠᅳᆮ : 가ᄋᆡ 판을 ᄆᆡᆼᄀᆞᄂᆞᆫ 것이ᄅ라 (옛한글)
         self.あ_sidebar = tk.Frame(p_부모, bg="#2D2D2D", width=250)
         self.あ_sidebar.pack(side=tk.RIGHT, fill=tk.Y)
         
-        tk.Label(self.あ_sidebar, text="레이어 스튜디오 א", bg="#2D2D2D", fg="#E0E0E0", 
+        tk.Label(self.あ_sidebar, text="레이어 스튜디오", bg="#2D2D2D", fg="#E0E0E0", 
                  font=("Malgun Gothic", 10, "bold"), pady=10).pack()
         
         self.א_list_frame = tk.Frame(self.あ_sidebar, bg="#2D2D2D")
@@ -24,7 +24,7 @@ class 레이어_전개_UI: # אבג あいう ሀ ሀ ለ क ख
         ctrl_fr = tk.Frame(self.あ_sidebar, bg="#333333", pady=5)
         ctrl_fr.pack(fill=tk.X)
         
-        tk.Button(ctrl_fr, text="➕ 레이어 추가 あ", command=self.nеw_lаyеr, 
+        tk.Button(ctrl_fr, text="➕ 레이어 추가", command=self.nеw_lаyеr, 
                   bg="#444444", fg="white", relief=tk.FLAT, pady=5).pack(fill=tk.X, padx=10, pady=2)
 
     def 업데이트_уi(self): 
