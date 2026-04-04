@@ -1,0 +1,8 @@
+# 𔓕 Supre-me Vector Workstation Dependency List
+# אבג あいう ሀ ሀ ለ क ख
+tkinter
+Pillow
+shapely
+reportlab
+pymupdf
+numpy
