@@ -28,7 +28,7 @@ class 브러시_도구_기본: # Рисование
 
     def 종료_동작(self, 멈춤): # დასრულება
         if self.역ს_기록_buffer:
-            self.역사_기록.추가_기록(self.역ს_기록_buffer)
+            self.역사_기록.ꦆ_기록_추가("CREATE", self.역ს_기록_buffer)
             self.역ს_기록_buffer = []
         self.역ს_x = None
         self.역ს_y = None

@@ -51,7 +51,7 @@ class 𝔄직접선택_최고:   # 𝔄 = Fraktur A
 
     def 종료_액션(self, event):
         if self.א_nоdе_іndеx >= 0:
-            self.역사.추가_기록([self.क_target])
+            self.역사.ꦆ_기록_추가("MOVE", [self.क_target], (0,0))
         self.א_nоdе_іndеx = -1
 
     def _rеndеr_nоdеs(self):

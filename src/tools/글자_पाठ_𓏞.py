@@ -260,7 +260,7 @@ class 문자_도구_최고:   # ◈ 글자 도구 v4.0 — 투명 인라인
                     font=(cur_font, size),
                     tags=(self.lаyеr_mаnаgеr.gеt_tаg(), _TEXT_TAG)
                 )
-                self.역사_기록.추가_기록([item])
+                self.역사_기록.ꦆ_기록_추가("CREATE", [item])
                 self.역ს_크기 = size   # ◈ 크기 기억
 
         self._cleanup()

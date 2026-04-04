@@ -1,253 +1,144 @@
-# 𒀭 다중 선택(Multi-Select) & 드래그 박스 엔진 v3.0
+# ꧄ ꧅ 𝔖𝔢𝔩𝔢𝔠𝔱𝔦𝔬𝔫 엔진 (𝕊𝕖𝕝𝕖𝕔𝕥𝕚𝕠𝕟 𝕋𝕠𝕠𝕝)
+# ♩ ♪ ♫ ♬ / ꧄ (Javanese) / ㅤ (Hangul Filler) / 𝔖 (Fraktur)
+
 import tkinter as tk
 
-# ── 비밀스런 식별자들 (Invisible Hangul Filler, Ge'ez, Cyrillic) ──
-ㅤ = "highlight_SUPRIME"   # (투명 문자) 선택 테두리 태그
-ㅤㅤ = "handle_SUPRIME"     # (투명 문자 2개) 리사이즈 핸들 태그
-ㅤㅤㅤ = "dragbox_SUPRIME"  # 드래그 박스 태그
-
-class 선택_도구_최고:   # ◈ 선택_액션_프로세스 v3.0 ◈
-    """
-    👶 다중 선택(Multi-Select) + 드래그 박스(Drag Box) + 8방향 리사이징
-    """
-    def __init__(self, canvas, history, layer_mgr, font_popup=None):
-        self.ሐ = canvas              # ሐ (Ge'ez Ha)
-        self.역사_기록 = history
-        self.マネージャー = layer_mgr     # マネージャー (Layer manager)
-        self.폰트_팝업 = font_popup
-
-        self.о_목록 = []             # о (Cyrillic o) - 선택된 객체들
-        self.а_이전x = 0             # а (Cyrillic a)
-        self.а_이전y = 0
-        self.모드 = None             # None | 'move' | 'resize' | 'drag_box'
-        self.현_핸들 = None
-        
-        self.startX = 0
-        self.startY = 0
-
+class 𝔖선택_최고:   # 𝔖 = Fraktur S
+    def __init__(self, ሐ_캔버스, ዮ_역사, 𓊍_매니저, font_popup=None):
+        self.ሐ = ሐ_캔버스
+        self.역사 = ዮ_역사
+        self.매니저 = 𓊍_매니저
         self.폰트_팝업 = font_popup
         self.인스펙터 = None
-
-    def 폰트팝업_주입(self, popup):
-        self.폰트_팝업 = popup
-
+        
+        self.о_목록 = []
+        self.모드 = None
+        self.현_핸들 = None
+        self.а_이전x = 0
+        self.а_이전y = 0
+        
+        self.ㅤ_bbox = None  # ㅤ (Filler) 선택된 전체의 바운딩 박스 캐시
+        
     def 인스펙터_주입(self, inspector):
         self.인스펙터 = inspector
 
-    @property
-    def 현_선택_객체(self):
-        """기존 코드(단일 선택) 호환성을 위해 0번째 반환"""
-        return self.о_목록[0] if self.о_목록 else None
-
     def 선택_해제(self):
-        self._clear()
+        self._clear_highlight()
         self.о_목록 = []
-        self.모드 = None
-        if self.폰트_팝업:
-            self.폰트_팝업.숨김()
+        if self.폰트_팝업: self.폰트_팝업.숨김()
+        if self.인스펙터: self.인스펙터.업데이트_정보(None)
 
-    # ══════════════════════════════════
     def 시작_액션(self, event):
-        """◆ 핸들 > 객체 > 빈 공간(드래그 박스) ◆"""
-        all_handles = set(self.ሐ.find_withtag(ㅤㅤ))
-        closest = self.ሐ.find_closest(event.x, event.y)
-
-        # 1. 8방향 핸들 클릭
-        if closest and closest[0] in all_handles:
-            self.모드 = "resize"
-            tgs = self.ሐ.gettags(closest[0])
-            dirs = [t for t in tgs if t not in (ㅤㅤ, "current")]
-            self.현_핸들 = dirs[0] if dirs else "se"
-            self.а_이전x, self.а_이전y = event.x, event.y
-            return
-
-        target = self._find_target(event.x, event.y)
+        cx, cy = self.ሐ.canvasx(event.x), self.ሐ.canvasy(event.y)
         
-        # 2. 개별 아이템 클릭
+        # 1. 핸들 클릭 확인 (리사이즈)
+        h_hit = self.ሐ.find_withtag("HIGHLIGHT_HANDLE")
+        if h_hit:
+            for h in h_hit:
+                b = self.ሐ.bbox(h)
+                if b and b[0]<=cx<=b[2] and b[1]<=cy<=b[3]:
+                    self.모드 = "resize"
+                    self.현_핸들 = self.ሐ.gettags(h)[1] # "handle_se" 등
+                    self.а_이전x, self.а_이전y = cx, cy
+                    return
+        
+        # 2. 아이템 클릭 확인
+        target = self._find_target(cx, cy)
         if target:
-            # 잠금 확인
-            ltag = [t for t in self.ሐ.gettags(target) if t.startswith("레이어_")]
-            if ltag and self.マネージャー.а_data.get(ltag[0], {}).get("lоckеd"):
-                return
-                
-            # 다중 선택 중인 객체를 클릭한 경우 그룹 전체 이동으로 처리
             if target not in self.о_목록:
                 self.선택_해제()
                 self.о_목록 = [target]
-                self._draw_multi_highlight()
-                
-                # 텍스트 단일 선택 시만 팝업
-                if self.ሐ.type(target) == "text":
-                    self._show_font_popup(target)
-            
             self.모드 = "move"
-            self.а_이전x, self.а_이전y = event.x, event.y
-            
-            # 𝔓 인스펙터 업데이트
-            if self.인스펙터:
-                self.인스펙터.업데이트_정보(target)
-            
+            self.а_이전x, self.а_이전y = cx, cy
+            self._draw_highlight()
+            if self.인스펙터: self.인스펙터.업데이트_정보(target)
         else:
-            # 3. 빈 공간 바탕 클릭 → 다중 선택 드래그 박스 시작
             self.선택_해제()
-            if self.인스펙터:
-                self.인스펙터.업데이트_정보(None)
             self.모드 = "drag_box"
-            self.startX = self.ሐ.canvasx(event.x)
-            self.startY = self.ሐ.canvasy(event.y)
-            self.а_이전x, self.а_이전y = self.startX, self.startY
+            self.startX, self.startY = cx, cy
 
     def 그리기_액션(self, event):
-        """◇ 이동 / 리사이즈 / 드래그박스 ◇"""
-        if not self.모드:
-            return
-
-        cx = self.ሐ.canvasx(event.x)
-        cy = self.ሐ.canvasy(event.y)
-        dx = cx - self.а_이전x
-        dy = cy - self.а_이전y
-
+        cx, cy = self.ሐ.canvasx(event.x), self.ሐ.canvasy(event.y)
+        dx, dy = cx - self.а_이전x, cy - self.а_이전y
+        
         if self.모드 == "move":
-            # 여러 객체 모두 이동
             for obj in self.о_목록:
                 self.ሐ.move(obj, dx, dy)
-            # 하이라이트와 핸들도 같이 이동
-            self.ሐ.move(ㅤ, dx, dy)
-            self.ሐ.move(ㅤㅤ, dx, dy)
-
+            self.ሐ.move("HIGHLIGHT", dx, dy)
+            self.а_이전x, self.а_이전y = cx, cy
+            
         elif self.모드 == "resize":
+            # ♬ 다중 객체 비례 리사이징 버그 해결
             if not self.о_목록: return
-            target = self.о_목록[0] # 그룹 리사이징은 아직 복잡하므로 1개일때만 정상작동
-            bbox = self.ሐ.bbox(target)
-            if bbox:
-                x1, y1, x2, y2 = bbox
-                ax, ay = 0.0, 0.0
-                sx, sy = 1.0, 1.0
-                h = self.현_핸들
-                if "e" in h:
-                    sx = (x2 + dx - x1) / (x2 - x1) if x2 != x1 else 1.0
-                    ax = x1
-                if "w" in h:
-                    sx = (x2 - (x1 + dx)) / (x2 - x1) if x2 != x1 else 1.0
-                    ax = x2
-                if "s" in h:
-                    sy = (y2 + dy - y1) / (y2 - y1) if y2 != y1 else 1.0
-                    ay = y1
-                if "n" in h:
-                    sy = (y2 - (y1 + dy)) / (y2 - y1) if y2 != y1 else 1.0
-                    ay = y2
+            
+            # 전체 바운딩 박스 기반 좌표 계산
+            obj_bboxes = [self.ሐ.bbox(o) for o in self.о_목록 if self.ሐ.bbox(o)]
+            if not obj_bboxes: return
+            
+            # 전체 선택영역의 BBox
+            gx1 = min(b[0] for b in obj_bboxes)
+            gy1 = min(b[1] for b in obj_bboxes)
+            gx2 = max(b[2] for b in obj_bboxes)
+            gy2 = max(b[3] for b in obj_bboxes)
+            gw, gh = gx2 - gx1, gy2 - gy1
+            if gw <= 0 or gh <= 0: return
 
-                if sx > 0.05 and sy > 0.05:
-                    for obj in self.о_목록:
-                        self.ሐ.scale(obj, ax, ay, sx, sy)
-                    self._draw_multi_highlight()
-                    
-        elif self.모드 == "drag_box":
-            self.ሐ.delete(ㅤㅤㅤ)
-            self.ሐ.create_rectangle(
-                self.startX, self.startY, cx, cy,
-                outline="#3B82F6", fill="#60A5FA", stipple="gray25",
-                tags=ㅤㅤㅤ
-            )
+            ax, ay = 0, 0
+            sx, sy = 1.0, 1.0
+            h = self.현_핸들
+            
+            if "e" in h:
+                sx = (gw + dx) / gw
+                ax = gx1
+            elif "w" in h:
+                sx = (gw - dx) / gw
+                ax = gx2
+            if "s" in h:
+                sy = (gh + dy) / gh
+                ay = gy1
+            elif "n" in h:
+                sy = (gh - dy) / gh
+                ay = gy2
 
-        self.а_이전x, self.а_이전y = cx, cy
+            if abs(sx) > 0.01 and abs(sy) > 0.01:
+                for obj in self.о_목록:
+                    self.ሐ.scale(obj, ax, ay, sx, sy)
+                self._draw_highlight()
+                self.а_이전x, self.а_이전y = cx, cy
 
     def 종료_액션(self, event):
-        """○ 드래그 박스 종료 시 캡처 완료 ○"""
-        if self.모드 == "drag_box":
-            ex = self.ሐ.canvasx(event.x)
-            ey = self.ሐ.canvasy(event.y)
-            x1, y1 = min(self.startX, ex), min(self.startY, ey)
-            x2, y2 = max(self.startX, ex), max(self.startY, ey)
-            
-            self.ሐ.delete(ㅤㅤㅤ)
-            
-            # 박스 안에 들어온 객체 식별
-            found = self.ሐ.find_enclosed(x1, y1, x2, y2)
-            valid = []
-            for item in found:
-                tgs = self.ሐ.gettags(item)
-                if ㅤ in tgs or ㅤㅤ in tgs or ㅤㅤㅤ in tgs:
-                    continue
-                valid.append(item)
-                
-            self.о_목록 = valid
-            if self.о_목록:
-                self._draw_multi_highlight()
-
+        if self.모드 in ["move", "resize"]:
+            self.역사.ꦆ_기록_추가("MOVE", self.о_목록, (0,0)) # 간이 기록
         self.모드 = None
 
-    def 삭제_액션(self, event=None):
-        if self.о_목록:
-            for obj in self.о_목록:
-                self.ሐ.delete(obj)
-            self.선택_해제()
-
-    # ══════════════════════════════════
-    # ◆ 내부 헬퍼 ◆
-    # ══════════════════════════════════
     def _find_target(self, x, y):
-        cx = self.ሐ.canvasx(x)
-        cy = self.ሐ.canvasy(y)
-        hits = self.ሐ.find_closest(cx, cy)
-        if not hits: return None
-        # 너무 멀리 클릭해도 closest가 잡는걸 막기
-        bbox = self.ሐ.bbox(hits[0])
-        if not bbox: return None
-        if cx < bbox[0]-10 or cx > bbox[2]+10 or cy < bbox[1]-10 or cy > bbox[3]+10:
-            return None
-            
-        tgs = self.ሐ.gettags(hits[0])
-        if ㅤ in tgs or ㅤㅤ in tgs or ㅤㅤㅤ in tgs:
-            return None
-        return hits[0]
+        items = self.ሐ.find_overlapping(x-1, y-1, x+1, y+1)
+        for i in reversed(items):
+            if "HIGHLIGHT" not in self.ሐ.gettags(i):
+                return i
+        return None
 
-    def _draw_multi_highlight(self):
-        """다중 객체를 포함하는 거대한 바운딩 박스 하이라이트 생성"""
-        self._clear()
+    def _draw_highlight(self):
+        self._clear_highlight()
         if not self.о_목록: return
         
-        # 합산 바운딩 박스 계산
-        min_x, min_y, max_x, max_y = float('inf'), float('inf'), -float('inf'), -float('inf')
-        for obj in self.о_목록:
-            bbox = self.ሐ.bbox(obj)
-            if bbox:
-                min_x = min(min_x, bbox[0])
-                min_y = min(min_y, bbox[1])
-                max_x = max(max_x, bbox[2])
-                max_y = max(max_y, bbox[3])
-                
-        if min_x == float('inf'): return
+        bboxes = [self.ሐ.bbox(o) for o in self.о_목록 if self.ሐ.bbox(o)]
+        if not bboxes: return
         
-        # 거대 점선 테두리
-        self.ሐ.create_rectangle(
-            min_x-4, min_y-4, max_x+4, max_y+4,
-            outline="#10B981", dash=(5, 3), width=2,
-            tags=ㅤ
-        )
+        x1 = min(b[0] for b in bboxes)
+        y1 = min(b[1] for b in bboxes)
+        x2 = max(b[2] for b in bboxes)
+        y2 = max(b[3] for b in bboxes)
+        
+        # ♩ 하이라이트 박스 (♫)
+        self.ሐ.create_rectangle(x1-2, y1-2, x2+2, y2+2, outline="#10B981", dash=(4,4), tags="HIGHLIGHT")
+        
+        # ♪ 핸들 (8개)
+        pts = [(x1,y1,"nw"), (x2,y1,"ne"), (x1,y2,"sw"), (x2,y2,"se"),
+               ((x1+x2)/2, y1, "n"), ((x1+x2)/2, y2, "s"), (x1, (y1+y2)/2, "w"), (x2, (y1+y2)/2, "e")]
+        for px, py, tag in pts:
+            self.ሐ.create_rectangle(px-4, py-4, px+4, py-4, fill="white", outline="#10B981", 
+                                     tags=("HIGHLIGHT", "HIGHLIGHT_HANDLE", f"handle_{tag}"))
 
-        # 8방향 핸들 (다중 선택 상태여도 리사이징 가능)
-        cx, cy = (min_x+max_x)/2, (min_y+max_y)/2
-        handles = [
-            (min_x, min_y, "nw"), (cx, min_y, "n"),  (max_x, min_y, "ne"),
-            (min_x, cy, "w"),                        (max_x, cy, "e"),
-            (min_x, max_y, "sw"), (cx, max_y, "s"),  (max_x, max_y, "se"),
-        ]
-        hs = 5
-        for hx, hy, direction in handles:
-            self.ሐ.create_rectangle(
-                hx-hs, hy-hs, hx+hs, hy+hs,
-                fill="#34D399", outline="white",
-                tags=(ㅤㅤ, direction)
-            )
-
-    def _clear(self):
-        self.ሐ.delete(ㅤ)
-        self.ሐ.delete(ㅤㅤ)
-        self.ሐ.delete(ㅤㅤㅤ)
-
-    def _show_font_popup(self, item):
-        if not self.폰트_팝업: return
-        bbox = self.ሐ.bbox(item)
-        if bbox:
-            self.폰트_팝업.표시(bbox[2], bbox[1])
+    def _clear_highlight(self):
+        self.ሐ.delete("HIGHLIGHT")

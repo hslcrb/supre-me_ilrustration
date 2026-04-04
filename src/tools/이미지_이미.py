@@ -35,7 +35,7 @@ class 이미지_도구_최고: # 𓃠 이미지_삽입_프로세스
             ) # 𓂝
             
             # 𓀕 역사에 기록 (이미지도 취소 가능하게)
-            self.역사_기록.추가_기록([아이템_id])
+            self.역사_기록.ꦆ_기록_추가("CREATE", [아이템_id])
             
         except Exception as e:
             import tkinter.messagebox as messagebox

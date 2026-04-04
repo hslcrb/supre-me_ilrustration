@@ -78,4 +78,4 @@ class 𝔅정렬_엔진〮:
                 self.ሐ.move(obj, 0, dy)
                 curr_y += (क_boxes[obj][3] - क_boxes[obj][1]) + gap
 
-        self.역사.추가_기록(о_목록)
+        self.역사.ꦆ_기록_추가("MOVE", о_목록, (0,0))

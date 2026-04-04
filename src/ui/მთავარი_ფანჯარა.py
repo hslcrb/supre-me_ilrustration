@@ -11,15 +11,15 @@ from src.tools.키сть                   import 브러시_도구_기본
 from src.ui.палитра                     import 색상_팔레트_UI
 from src.ui.크기_조절기                  import 브러시_크기_최고
 from src.tools.형상_आकृति_𓀀            import 도형_도구_최고
-from src.tools.역사_इतिहास_𓀕           import 역사_현황_시스템
+from src.tools.역사_इतिहास_𓀕           import 𝔘역사_최고
 from src.tools.글자_पाठ_𓏞             import 문자_도구_최고
-from src.utils.저장_रक्षण_𓃟            import 저장_유틸_최고
+from src.utils.저장_रक्षण_𓃟            import 𝔖저장_공간_최고
 from src.utils.𓊍_mаnаgеr_მენეჯერი     import 레이어_관리_시스템
 from src.ui.레이어_층_𓊍                 import 레이어_전개_UI
 from src.tools.배경_रंग_𓈖               import 배경_도구_최고
 from src.tools.그라데이션_मेश_𓈖          import 메쉬_공간_도구
 from src.tools.이미지_이미               import 이미지_도구_최고
-from src.tools.선택_선택                 import 선택_도구_최고
+from src.tools.선택_선택                 import 𝔖선택_최고
 from src.ui.폰트_팝업_𓏞                 import 폰트_팝업_최고
 from src.utils.格式_轉換_工具             import 格式轉換工具   # 繁體中文 AI/PDF 엔진
 from src.tools.ペン_베지어_𓍯             import ㅤペン_최고
@@ -64,8 +64,8 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
         self.티ლო.focus_set()
 
         # ━━━ 도구 초기화 ━━━
-        self.역사_현황   = 역사_현황_시스템(self.티ლო)
-        self.저장_유틸   = 저장_유틸_최고(self.티ლო)
+        self.역사_현황   = 𝔘역사_최고(self.티ლო)
+        self.저장_유틸   = 𝔖저장_공간_최고(self.티ლო)
         self.레이어_관리 = 레이어_관리_시스템(self.티ლო)
         self.배경_도구   = 배경_도구_최고(self.티ლო)
         self.브러시      = 브러시_도구_기본(self.티ლო, self.역사_현황, self.레이어_관리)
@@ -91,7 +91,7 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
         )
 
         # ◆ 선택 도구 (폰트 팝업 주입) ◆
-        self.선택_도구 = 선택_도구_최고(
+        self.선택_도구 = 𝔖선택_최고(
             self.티ლო, self.역사_현황, self.레이어_관리,
             font_popup=self.폰트_팝업
         )
@@ -137,7 +137,9 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
 
         # ○ 전역 단축키 ○
         self.rооt.bind("<Delete>",   self._delete_selected)
-        self.rооt.bind("<Control-z>", lambda e: self.역사_현황.undo_취소())
+        self.rооt.bind("<Control-z>", lambda e: self.역사_현황.ꦇ_undo_액션())
+        self.rооt.bind("<Control-y>", lambda e: self.역사_현황.ꦈ_redo_액션())
+        self.rооt.bind("<Control-Z>", lambda e: self.역사_현황.ꦈ_redo_액션()) # Ctrl+Shift+Z
         # Z-인덱스 단축키
         self.rооt.bind("[", self._send_backward)
         self.rооt.bind("]", self._bring_forward)
@@ -152,14 +154,14 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
         mbar = tk.Menu(self.rооt)
         self.rооt.config(menu=mbar)
 
-        # ○ 파일 ○
+        # ○ 𝔉𝔦𝔩𝔢 ○
         fm = tk.Menu(mbar, tearoff=0)
-        mbar.add_cascade(label="◇ 파일(F)", menu=fm)
-        fm.add_command(label="저장 (.sup)",     command=self.저장_유틸.저장_프로세스)
-        fm.add_command(label="불러오기 (.sup)",  command=self.저장_유틸.로드_프로세스)
+        mbar.add_cascade(label="꧄ 𝔉𝔦𝔩𝔢(♩)", menu=fm)
+        fm.add_command(label="♫ 𝔖𝔞𝔳𝔢 (ꦆ)",     command=self.저장_유틸.저장_프로세스)
+        fm.add_command(label="♬ 𝔏𝔬𝔞𝔡 (ꦇ)",  command=self.저장_유틸.로드_프로세스)
         fm.add_separator()
-        fm.add_command(label="PNG로 익스포트",   command=self.저장_유틸.PNG_내보내기_프로세스)
-        fm.add_command(label="SVG로 익스포트",   command=self.저장_유틸.SVG_내보내기_프로세스)
+        fm.add_command(label="PNG 𝔈𝔵𝔭𝔬𝔯𝔱 ♩",   command=self.저장_유틸.PNG_내보내기_프로세스)
+        fm.add_command(label="SVG 𝔈𝔵𝔭𝔬𝔯𝔱 ♪",   command=self.저장_유틸.SVG_내보내기_프로세스)
         fm.add_separator()
         # 繁體中文 格式工具 — AI / PDF
         fm.add_command(label="Adobe Illustrator (.ai) 저장",  command=self.格式工具.儲存_人工智慧格式)
@@ -170,14 +172,14 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
         fm.add_separator()
         fm.add_command(label="종료",             command=self.rооt.quit)
 
-        # ◆ 편집 ◆
+        # ◆ 𝔈𝔡𝔦𝔱 ◆
         em = tk.Menu(mbar, tearoff=0)
-        mbar.add_cascade(label="◆ 편집(E)", menu=em)
-        em.add_command(label="실행 취소 (Ctrl+Z)", command=self.역사_현황.undo_취소)
-        em.add_command(label="다시 실행",           command=self.역사_현황.redo_다시)
+        mbar.add_cascade(label="꧅ 𝔈𝔡𝔦𝔱(♪)", menu=em)
+        em.add_command(label="♩ 𝔘𝔫𝔡𝔬 (ꦇ)", command=self.역사_현황.ꦇ_undo_액션)
+        em.add_command(label="♪ ℜ𝔢𝔡𝔬 (ꦈ)",           command=self.역사_현황.ꦈ_redo_액션)
         em.add_separator()
-        em.add_command(label="그룹 묶기 (Ctrl+G)",   command=self._group_selected)
-        em.add_command(label="그룹 해제 (Ctrl+Shift+G)", command=self._ungroup_selected)
+        em.add_command(label="𝔊𝔯𝔬𝔲𝔭 묶기 (Ctrl+G)",   command=self._group_selected)
+        em.add_command(label="𝔘𝔫𝔤𝔯𝔬𝔲𝔭 해제", command=self._ungroup_selected)
         em.add_separator()
         # 𝔅 정렬 / 분포
         em.add_command(label="◀ 좌측 정렬",       command=lambda: self.정렬_엔진.정렬_실행(self.선택_도구.о_목록, 'left'))
@@ -346,24 +348,26 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
     def _group_selected(self, e=None):
         if self.현_모드 == "선택" and len(self.선택_도구.о_목록) > 1:
             self.레이어_관리.그룹_묶기_G(self.선택_도구.о_목록)
-            self.역사_현황.추가_기록(self.선택_도구.о_목록) # 그룹 상태 저장
+            self.역사_현황.ꦆ_기록_추가("ATTR", self.선택_도구.о_목록) # 그룹 상태 저장
 
     def _ungroup_selected(self, e=None):
         if self.현_모드 == "선택" and self.선택_도구.현_선택_객체:
             self.레이어_관리.그룹_해제_G(self.선택_도구.현_선택_객체)
-            self.역사_현황.추가_기록([self.선택_도구.현_선택_객체])
+            self.역사_현황.ꦆ_기록_추가("ATTR", [self.선택_도구.현_선택_객체])
 
     def _apply_linear_gradient(self):
         if self.현_모드 == "선택" and self.선택_도구.о_목록:
             c1 = self.브러시.역ს_색상
             for obj in self.선택_도구.о_목록:
                 self.그라데이션_엔진.𝔄플라이_그라데이션(obj, c1, "#FFFFFF", "linear")
+            self.역사_현황.ꦆ_기록_추가("ATTR", self.선택_도구.о_목록)
 
     def _apply_radial_gradient(self):
         if self.현_모드 == "선택" and self.선택_도구.о_목록:
             c1 = self.브러시.역ს_색상
             for obj in self.선택_도구.о_목록:
                 self.그라데이션_엔진.𝔄플라이_그라데이션(obj, c1, "#FFFFFF", "radial")
+            self.역사_현황.ꦆ_기록_추가("ATTR", self.선택_도구.о_목록)
 
     # ══════════════════════════════════
     # ◆ 모드 전환 ◆

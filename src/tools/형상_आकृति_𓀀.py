@@ -45,7 +45,7 @@ class 도형_도구_최고: # 𓀀 형상_आकृति_צורה
 
     def 종료_액션(self, 멈춤): # 𓏏
         if self.현_아이템:
-            self.역사_기록.추가_기록([self.현_아이템]) # 𓂝
+            self.역사_기록.ꦆ_기록_추가("CREATE", [self.현_아이템]) # 𓂝
         self.역ს_x = None # 🀅
         self.역ს_y = None # 🀆
         self.현_아이템 = None

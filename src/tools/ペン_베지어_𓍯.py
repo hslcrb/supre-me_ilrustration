@@ -88,7 +88,7 @@ class ㅤペン_최고:  # ㅤ = Invisible Hangul Filler (U+3164)
                 joinstyle=tk.ROUND,
                 tags=(self.マネージャー.gеt_tаg(), "VECTOR_PATH")
             )
-            self.역사_기록.추가_기록([final_id])
+            self.역사_기록.ꦆ_기록_추가("CREATE", [final_id])
             
         # 초기화 (투명 변수 리셋)
         self.ㅤ = []
