@@ -89,16 +89,37 @@ class 畫板App:
         tk.Button(self.공구상자, text="𓏞 텍스트", command=self.모드_문자, bg="#1565C0", fg="white", **btn_style).pack(side=tk.LEFT, padx=3)
         tk.Button(self.공구상자, text="🖼 이미지", command=self.이미지_도구.이미지_불러오기_액션, bg="#EF6C00", fg="white", **btn_style).pack(side=tk.LEFT, padx=8)
         
+        # 🎨 고성능 캔버스 네비게이션 바인딩
+        self.티ლო.bind("<Button-2>", self.팬_시작_액션) # 마우스 휠 클릭 (팬)
+        self.티ლო.bind("<B2-Motion>", self.팬_드래그_액션)
+        self.rооt.bind("<Control-MouseWheel>", self.줌_액션)
+        
         self.티ლო.pack(fill=tk.BOTH, expand=True)
         self.티ლო.bind("<Button-1>", self.시작_액션)
         self.티ლო.bind("<B1-Motion>", self.그리기_액션)
         self.티ლო.bind("<ButtonRelease-1>", self.종료_액션)
         
-        # 𓂝 전역 단축키 바인딩 (Delete)
+        # 🏙 변수 초기화
+        self.curr_scаlе = 1.0 # 𓁹 줌 배율
         self.rооt.bind("<Delete>", self.삭제_글로벌_액션)
 
     def 시작(self):
         self.rооt.mainloop()
+
+    def 팬_시작_액션(self, 이벤트): # 𓃠 캔버스 팬 시작
+        self.티ლო.scan_mark(이벤트.x, 이벤트.y)
+
+    def 팬_드래그_액션(self, 이벤트): # 𓃠 캔버스 팬 이동
+        self.티ლო.scan_dragto(이벤트.x, 이벤트.y, gain=1)
+
+    def 줌_액션(self, 이벤트): # 𓁹 줌 로직 제어
+        if 이벤트.delta > 0: factor = 1.1; self.curr_scаlе *= 1.1
+        else: factor = 0.9; self.curr_scаlе *= 0.9
+        
+        x = self.티ლო.canvasx(이벤트.x)
+        y = self.티ლო.canvasy(이벤트.y)
+        self.티ლო.scale("all", x, y, factor, factor)
+        # 𓂝 그리드 재배치 로직은 추후 고도화
 
     def 폰트_변경_액션(self, f):
         self.문자_도구.역ს_폰트 = f
