@@ -27,6 +27,7 @@ from src.tools.직접선택_ለ             import 𝔄직접선택_최고
 from src.tools.정렬_ሀ                 import 𝔅정렬_엔진〮
 from src.tools.그라데이션_ሐ             import 𝔇그라데이션_최고
 from src.ui.특성_ፐ                 import 𝔓특성_UI_최고
+from src.tools.도형_연산_𔓕            import 𝔅불리언_최고
 
 # ◆ 상수 (심볼은 값/주석에만 사용) ◆
 _TITLE  = "슈프리미 일러스트레이터 ◈ Professional Vector Engine v2.1"
@@ -80,10 +81,12 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
         # ⠁⠂⠃ ベジェ 펜 도구 (투명 식별자 클래스)
         self.펜_도구 = ㅤペン_최고(self.티ლო, self.역사_현황, self.레이어_관리)
         
-        # 𝔄 직접 선택 도구 / 𝔅 정렬 엔진 / 𝔇 그라데이션 엔진 (Fraktur)
+        # 𝔄 직접 선택 도구 / 𝔅 정렬 엔진 / 𝔇 그라데이션 엔진 / 𔓕 불리언 (Fraktur)
+        # ᄠᅳᆮ : 여러 가지 다ᄉᆞ리ᄂᆞᆫ 기계ᄃᆞᆯ을 끄러 모ᄒᆞᄂᆞᆫ 것이ᄅ라 (옛한글)
         self.직접선택_도구 = 𝔄직접선택_최고(self.티ლო, self.역사_현황)
         self.정렬_엔진 = 𝔅정렬_엔진〮(self.티ლო, self.역사_현황)
         self.그라데이션_엔진 = 𝔇그라데이션_최고(self.티ლო)
+        self.불리언_엔진 = 𝔅불리언_최고(self.티ლო, self.역사_현황)
         # ◈ 폰트 팝업 (선택 도구보다 먼저 생성) ◈
         self.폰트_팝업 = 폰트_팝업_최고(
             self.rооt, self.티ლო,
@@ -200,6 +203,15 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
         mbar.add_cascade(label="◈ 캔버스(C)", menu=cm)
         cm.add_command(label="배경색 변경",  command=self.배경_도구.색상_변경)
         cm.add_command(label="그리드 토글",  command=self._toggle_grid)
+
+        # 𔓕 𑗊 객체 연산 (Object Operations)
+        # ᄠᅳᆮ : 도형을 정ᄒᆞᆫ 법ᄃᆡ로 ᄂᆞᆫᄒᆞ거나 합ᄒᆞᄂᆞᆫ 것이ᄅ라 (옛한글)
+        # אבג あいう ሀ ሀ ለ क ख
+        om = tk.Menu(mbar, tearoff=0)
+        mbar.add_cascade(label="𔓕 객체(O)", menu=om)
+        om.add_command(label="합치기 (Union) א", command=lambda: self.불리언_엔진.연산_실행(self.선택_도구.о_목록, 'union'))
+        om.add_command(label="빼기 (Subtract) あ", command=lambda: self.불리언_엔진.연산_실행(self.선택_도구.о_목록, 'subtract'))
+        om.add_command(label="교차 (Intersect) ሀ", command=lambda: self.불리언_엔진.연산_실행(self.선택_도구.о_목록, 'intersect'))
 
     # ══════════════════════════════════
     # ◉ 툴바 ◉
