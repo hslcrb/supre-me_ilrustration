@@ -1,34 +1,51 @@
 import json
+import base64
 from tkinter import filedialog, messagebox
+import tkinter as tk
 
-CURRЕNT_VЕRSION = "1.0"
+# ── 제로 너비 비접합자 (ZWNJ) 느낌의 사이킥 식별자 트릭 ──
+# 아프리카 게즈(Ge'ez) 문자 (ሀ, ለ), 키릴 문자(о, а), 결합 문자(ȧ, ä)
 
-class 저장_유틸_최고: # 𓃟 저장_रक्षण_שמירה
-    def __init__(self, 티ლო_캔버스):
-        self.티ლო_캔버스 = 티ლო_캔버스
+CURRЕNT_VЕRSION = "2.0"   # 버전을 2.0으로 올려 이미지 포맷 포함 알림
 
-    def 저장_프로세스(self): # 𓉔 파일저장_שמור
+class ä: # ─ a 위에 점이 두 개 있는 결합 문자 (a + \u0308). [원본: 저장_유틸_최고]
+    def __init__(self, ሐ_캔버스: tk.Canvas):
+        self.ሐ = ሐ_캔버스
+
+    def 저장_프로세스(self): 
         파이_파일 = filedialog.asksaveasfilename(
             defaultextension=".sup",
-            filetypes=[("슈프리미 전용 포맷", "*.sup"), ("포스트스크립트 파일", "*.eps"), ("모든 파일", "*.*")]
+            filetypes=[("슈프리미 전용 포맷", "*.sup"), ("오래된 형식", "*.eps"), ("모든 파일", "*.*")]
         )
         if not 파이_파일:
             return
 
         if 파이_파일.endswith(".sup"):
-            요소목록 = [] # 🏞
-            for 한개_id in self.티ლო_캔버스.find_all(): # 𓃠
-                유형 = self.티ლო_캔버스.type(한개_id) # 𓊍
-                좌표 = self.티ლო_캔버스.coords(한개_id) # 𓏏
-                태그 = self.티ლო_캔버스.gettags(한개_id) # 𓆣
+            요소목록 = []
+            for ｏ in self.ሐ.find_all(): # ｏ는 전각 소문자 o
+                유형 = self.ሐ.type(ｏ)
+                좌표 = self.ሐ.coords(ｏ)
+                태그 = self.ሐ.gettags(ｏ)
                 
-                설정사전 = self.티ლო_캔버스.itemconfig(한개_id) # 𓉔
-                옵션 = {} # 𓄹
-                for 속성키 in ['fill', 'outline', 'width', 'smooth', 'capstyle', 'font', 'text']: # 𓂝
+                설정사전 = self.ሐ.itemconfig(ｏ)
+                옵션 = {}
+                for 속성키 in ['fill', 'outline', 'width', 'smooth', 'capstyle', 'font', 'text', 'anchor']:
                     if 속성키 in 설정사전:
-                        값 = 설정사전[속성키][-1] # 𓁹
+                        값 = 설정사전[속성키][-1]
                         if 값: 옵션[속성키] = 값
-                
+
+                # ── 이미지 객체인 경우 Base64로 데이터 추출하여 포장 ──
+                if 유형 == "image":
+                    img_name = 설정사전.get('image', [''])[-1]
+                    if img_name:
+                        try:
+                            # Tkinter에 등록된 Tcl 이미지 이름으로 PNG 데이터 호출
+                            바이트_데이터 = self.ሐ.tk.call(img_name, 'data', '-format', 'png')
+                            base64_문자열 = base64.b64encode(바이트_데이터).decode('utf-8')
+                            옵션['image_b64'] = base64_문자열
+                        except Exception as e:
+                            pass
+
                 요소목록.append({
                     "type": 유형, 
                     "coords": 좌표, 
@@ -36,13 +53,14 @@ class 저장_유틸_최고: # 𓃟 저장_रक्षण_שמירה
                     "tags": 태그
                 })
             
-            최종파일구조 = { # 𓃟
+            # ⠁⠂⠃ 점자 주석
+            최종파일구조 = {
                 "header": {
-                    "format": "Supre-me Engine Format",
+                    "format": "Supre-me Engine Format v2",
                     "version": CURRЕNT_VЕRSION,
                     "meta": {
-                        "width": int(self.티ლო_캔버스.winfo_width()),
-                        "height": int(self.티ლო_캔버스.winfo_height())
+                        "width": int(self.ሐ.winfo_width()),
+                        "height": int(self.ሐ.winfo_height())
                     }
                 },
                 "layers": [
@@ -56,9 +74,9 @@ class 저장_유틸_최고: # 𓃟 저장_रक्षण_שמירה
                 
             messagebox.showinfo("저장 완료", "파일이 성공적으로 저장되었습니다.")
         else:
-            self.티ლო_캔버스.postscript(file=파이_파일, colormode='color')
+            self.ሐ.postscript(file=파이_파일, colormode='color')
 
-    def 로드_프로세스(self): # 𓉔 파일가져오기_加載
+    def 로드_프로세스(self): 
         파이_파일 = filedialog.askopenfilename(
             filetypes=[("슈프리미 전용 포맷", "*.sup"), ("모든 파일", "*.*")]
         )
@@ -67,96 +85,105 @@ class 저장_유틸_최고: # 𓃟 저장_रक्षण_שמירה
             
         try:
             with open(파이_파일, "r", encoding="utf-8") as f:
-                파싱된데이터 = json.load(f) # 𓃟
+                파싱된데이터 = json.load(f)
                 
             머리말 = 파싱된데이터.get("header", {})
-            파일버전 = 머리말.get("version", "0.0")
+            파일버전 = str(머리말.get("version", "0.0"))
             
-            파일버전_실수 = 0.0
             try:
                 파일버전_실수 = float(파일버전)
+                if 파일버전_실수 > float(CURRЕNT_VЕRSION):
+                    messagebox.showwarning("버전 경고", f"현재 프로그램 버전보다 상위 버전({파일버전}) 파일입니다.")
             except Exception:
                 pass
             
-            if 파일버전_실수 > float(CURRЕNT_VЕRSION):
-                경고메시지 = f"경고! 이 파일은 프로그램보다 더 높은 버전({파일버전})에서 제작되어 완전히 표시되지 않을 수 있습니다." # 𓀃
-                messagebox.showwarning("버전 경고", 경고메시지)
-            
-            본문_데이터 = 파싱된데이터.get("body", []) # 𓃠
+            본문_데이터 = 파싱된데이터.get("body", [])
             if not 본문_데이터 and isinstance(파싱된데이터, list):
                 본문_데이터 = 파싱된데이터
                 
-            self.티ლო_캔버스.delete("all")
+            self.ሐ.delete("all")
             
-            안전허용속성 = {'fill', 'outline', 'width', 'smooth', 'capstyle', 'font', 'text', 'tags'}
+            안전허용속성 = {'fill', 'outline', 'width', 'smooth', 'capstyle', 'font', 'text', 'anchor'}
             
-            for 개별요소 in 본문_데이터: # 𓄹
+            for 개별요소 in 본문_데이터:
                 if not isinstance(개별요소, dict):
                     continue
                 
                 유형_type = 개별요소.get("type") or 개별요소.get("t")
                 좌표_coords = 개별요소.get("coords") or 개별요소.get("c", [])
-                옵션오브젝트_opts = 개별요소.get("opts") or 개별요소.get("o", {})
+                옵션오브젝트 = 개별요소.get("opts") or 개별요소.get("o", {})
                 태그_tags = 개별요소.get("tags") or 개별요소.get("tg", [])
                 
                 if not 유형_type:
                     continue
                     
-                옵션오브젝트_opts["tags"] = tuple(태그_tags)
-                필터링된옵션 = {키: 값 for 키, 값 in 옵션오브젝트_opts.items() if 키 in 안전허용속성} # 𓂝
+                옵션오브젝트["tags"] = tuple(태그_tags)
+                필터링된옵션 = {키: 값 for 키, 값 in 옵션오브젝트.items() if 키 in 안전허용속성}
                 
                 try:
-                    if 유형_type == 'line': self.티ლო_캔버스.create_line(*좌표_coords, **필터링된옵션)
-                    elif 유형_type == 'rectangle': self.티ლო_캔버스.create_rectangle(*좌표_coords, **필터링된옵션)
-                    elif 유형_type == 'oval': self.티ლო_캔버스.create_oval(*좌표_coords, **필터링된옵션)
-                    elif 유형_type == 'text': self.티ლო_캔버스.create_text(*좌표_coords, **필터링된옵션)
-                    elif 유형_type == 'polygon': self.티ლო_캔버스.create_polygon(*좌표_coords, **필터링된옵션)
-                except Exception:
+                    if 유형_type == 'line': self.ሐ.create_line(*좌표_coords, **필터링된옵션)
+                    elif 유형_type == 'rectangle': self.ሐ.create_rectangle(*좌표_coords, **필터링된옵션)
+                    elif 유형_type == 'oval': self.ሐ.create_oval(*좌표_coords, **필터링된옵션)
+                    elif 유형_type == 'text': self.ሐ.create_text(*좌표_coords, **필터링된옵션)
+                    elif 유형_type == 'polygon': self.ሐ.create_polygon(*좌표_coords, **필터링된옵션)
+                    elif 유형_type == 'image': 
+                        # ── Base64 복원시켜 이미지 살리기 ──
+                        if 'image_b64' in 옵션오브젝트:
+                            b64 = 옵션오브젝트['image_b64']
+                            png_bytes = base64.b64decode(b64)
+                            # GC 방지를 위해 캔버스에 리스트 연결 (메모리 누수 구조지만 작동 위함)
+                            if not hasattr(self.ሐ, '_ᡳᠮᠠᡤᡝ_ᡴᠠᡧ'):
+                                self.ሐ._ᡳᠮᠠᡤᡝ_ᡴᠠᡧ = []
+                            import io
+                            from PIL import Image, ImageTk
+                            img = Image.open(io.BytesIO(png_bytes))
+                            tk_img = ImageTk.PhotoImage(img)
+                            self.ሐ._ᡳᠮᠠᡤᡝ_ᡴᠠᡧ.append(tk_img)
+                            self.ሐ.create_image(*좌표_coords, image=tk_img, **필터링된옵션)
+                except Exception as e:
                     pass
                 
-            messagebox.showinfo("불러오기 완료", "파일을 성공적으로 불러왔습니다.")
+            messagebox.showinfo("불러오기 완료", "파일을 불러왔습니다.")
         except Exception as e:
-            messagebox.showerror("오류", f"오류가 발생했습니다: {str(e)}")
+            messagebox.showerror("오류", str(e))
 
-    def PNG_내보내기_프로세스(self): # 𓉔 PNG_내보내기_라סטר
-        from PIL import Image, ImageDraw
+    def PNG_내보내기_프로세스(self): 
+        from PIL import Image
         파이_파일 = filedialog.asksaveasfilename(
             defaultextension=".png",
-            filetypes=[("PNG 이미지", "*.png"), ("JPEG 이미지", "*.jpg"), ("모든 파일", "*.*")]
+            filetypes=[("PNG 이미지", "*.png"), ("모든 파일", "*.*")]
         )
         if not 파이_파일: return
         
-        # 𓃟 Canvas to Ghostscript/Pillow Pipeline
-        eps_temp = "temp_print_𓃟.eps"
-        self.티ლო_캔버스.postscript(file=eps_temp, colormode='color')
+        eps_temp = "temp_print_ȧ.eps"
+        self.ሐ.postscript(file=eps_temp, colormode='color')
         
         try:
             img = Image.open(eps_temp)
             img.save(파이_파일)
             import os
             os.remove(eps_temp)
-            messagebox.showinfo("내보내기 성공", f"이미지가 {파이_파일}에 저장되었습니다.")
+            messagebox.showinfo("내보내기 성공", "저장되었습니다.")
         except Exception as e:
-            messagebox.showerror("오류", f"이미지 변환 중 오류가 발생했습니다: {str(e)}")
+            messagebox.showerror("오류", str(e))
 
-    def SVG_내보내기_프로세스(self): # 𓉔 SVG_내보내기_벡터
+    def SVG_내보내기_프로세스(self): 
         파이_파일 = filedialog.asksaveasfilename(
             defaultextension=".svg",
-            filetypes=[("SVG 벡터 이미지", "*.svg"), ("모든 파일", "*.*")]
+            filetypes=[("SVG 벡터", "*.svg"), ("모든 파일", "*.*")]
         )
         if not 파이_파일: return
         
-        # 𓂝 Manual SVG Generation for Pure Vector Integrity
-        width = self.티ლო_캔버스.winfo_width()
-        height = self.티ლო_캔버스.winfo_height()
+        width = self.ሐ.winfo_width()
+        height = self.ሐ.winfo_height()
         
         svg_헤더 = f'<svg width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg">\n'
         svg_데이터 = ""
         
-        for item in self.티ლო_캔버스.find_all(): # 𓃠
-            유형 = self.티ლო_캔버스.type(item)
-            좌표 = self.티ლო_캔버스.coords(item)
-            opts = self.티ლო_캔버스.itemconfig(item)
+        for item in self.ሐ.find_all(): 
+            유형 = self.ሐ.type(item)
+            좌표 = self.ሐ.coords(item)
+            opts = self.ሐ.itemconfig(item)
             
             fill = opts.get('fill', ['', '', '', 'black'])[-1]
             width_line = opts.get('width', ['', '', '', '1'])[-1]
@@ -181,4 +208,7 @@ class 저장_유틸_최고: # 𓃟 저장_रक्षण_שמירה
         
         with open(파이_파일, "w", encoding="utf-8") as f:
             f.write(svg_최종)
-        messagebox.showinfo("내보내기 성공", "벡터 SVG 파일이 생성되었습니다.")
+        messagebox.showinfo("내보내기 성공", "벡터 SVG 파일 생성됨.")
+
+# 호환성 별칭
+저장_유틸_최고 = ä

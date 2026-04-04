@@ -112,6 +112,9 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
         # ○ 전역 단축키 ○
         self.rооt.bind("<Delete>",   self._delete_selected)
         self.rооt.bind("<Control-z>", lambda e: self.역사_현황.undo_취소())
+        # Z-인덱스 단축키
+        self.rооt.bind("[", self._send_backward)
+        self.rооt.bind("]", self._bring_forward)
 
     # ══════════════════════════════════
     # ◆ 메뉴 ◆
@@ -244,6 +247,27 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
         x = self.티ლო.canvasx(e.x)
         y = self.티ლო.canvasy(e.y)
         self.티ლო.scale("all", x, y, f, f)
+        
+        # ⠁⠂⠃ 줌 아웃/인 할때 텍스트 폰트 크기 깨짐 버그 수정 (Tkinter 한계 보완)
+        for о_항목 in self.티ლო.find_all():
+            if self.티ლო.type(о_항목) != "text":
+                continue
+            а_옵션 = self.티ლო.itemconfig(о_항목, "font")
+            if а_옵션:
+                try:
+                    # 'Arial 24' 등에서 24 추출 후 배율 곱함
+                    font_str = str(а_옵션[-1])
+                    parts = font_str.split()
+                    if '{' in font_str:
+                        fname = font_str[1:font_str.index('}')]
+                        fsize = int(parts[-1])
+                    else:
+                        fname = parts[0]
+                        fsize = int(parts[-1])
+                    
+                    self.티ლო.itemconfig(о_항목, font=(fname, int(fsize * f)))
+                except Exception:
+                    pass
 
     # ══════════════════════════════════
     # ○ 단축키 ○
@@ -251,6 +275,14 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
     def _delete_selected(self, e=None):
         if self.현_모드 == "선택":
             self.선택_도구.삭제_액션(e)
+
+    def _bring_forward(self, e=None):
+        if self.현_모드 == "선택" and self.선택_도구.현_선택_객체:
+            self.레이어_관리.앞으로_가져오기_Z(self.선택_도구.현_선택_객체)
+
+    def _send_backward(self, e=None):
+        if self.현_모드 == "선택" and self.선택_도구.현_선택_객체:
+            self.레이어_관리.뒤로_보내기_Z(self.선택_도구.현_선택_객체)
 
     # ══════════════════════════════════
     # ◆ 모드 전환 ◆
