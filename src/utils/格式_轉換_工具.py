@@ -1,418 +1,414 @@
 """
-格式轉換工具模組  ── 슈프리미 포맷 변환 엔진
-繁體中文 識別符 使用  ──  Traditional Chinese identifiers
+ᡤᡳᠰᡠᠨ ᡥᡝᡵᡤᡝᠨ ᠠᡤᡡᡵᠠ — 格式轉換工具 v2.0
+ᠮᠠᠨᠵᡠ ᡤᡳᠰᡠᠨ ᡝ ᠠᡤᡡᡵᠠ  (Manchu-script Format Engine)
 
-支援格式 (지원 포맷):
-  ● 儲存  → .ai  (Adobe Illustrator PostScript DSC)
-  ● 載入  ← .ai  (fitz 或 PIL fallback)
-  ● 儲存  → .pdf (reportlab 向量)
-  ● 載入  ← .pdf (PyMuPDF/fitz → 點陣圖 → 畫布)
+ᡤᡝᠮᡠᠯᡝ:   save / 儲存
+ᡤᠠᠵᡳ:    load / 載入
+ᡥᡝᡵᡤᡝᠨ: format / 格式
+
+Ghostscript: C:\\Program Files\\gs\\gs10.07.0\\bin\\gswin64c.exe
+reportlab  : pip 설치됨
+PyMuPDF    : pip 설치됨
 """
 
 import os
 import io
+import glob
+import tempfile
+import subprocess
 import tkinter as tk
 from tkinter import filedialog, messagebox
 
 
 # ══════════════════════════════════════════════════════
-# 常數 (상수)
+# ᡥᡝᡵᡤᡝᠨ ᡳᠴᡳ ─ Constants / 常數
 # ══════════════════════════════════════════════════════
-_版本號碼   = "1.0"             # 슈프리미 포맷 버전
-_創作者     = "Supre-me Illustrator"
-_著作權     = "2026 hslcrb"
-_預設解析度 = 150               # PDF 래스터화 DPI (fitz)
+
+# Ghostscript 실행 파일 경로 자동 탐색
+def _ᡤᠰ_ᠵᡠᡵᡤᠠᠨ() -> str:  # gs_find
+    """ᡤᠰ ᠪᠠ ᠪᡠᠯᡠᠮᠪᡳ — Ghostscript 경로 탐색"""
+    # 이미 PATH에 있으면 우선
+    for candidate in ("gswin64c", "gswin32c", "gs"):
+        try:
+            r = subprocess.run([candidate, "-version"],
+                               capture_output=True, text=True, timeout=3)
+            if r.returncode == 0:
+                return candidate
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            pass
+
+    # Windows 설치 경로 탐색
+    patterns = [
+        r"C:\Program Files\gs\gs*\bin\gswin64c.exe",
+        r"C:\Program Files\gs\gs*\bin\gswin32c.exe",
+        r"C:\Program Files (x86)\gs\gs*\bin\gswin32c.exe",
+    ]
+    for pat in patterns:
+        hits = sorted(glob.glob(pat), reverse=True)
+        if hits:
+            return hits[0]
+    return ""
+
+
+_ᡤᠰ_ᠵᡠᡵᡤᡝᠨ   = _ᡤᠰ_ᠵᡠᡵᡤᠠᠨ()   # ᡤᠰ ᡝᠵᡝᠨ — GS executable path
+_ᡤᠰ_ᠪᡳ_ᡝ     = bool(_ᡤᠰ_ᠵᡠᡵᡤᡝᠨ)  # ᡤᠰ ᠪᡳ ─ GS available?
+_ᡩᠣᠰᡳ_ᡳᠯᡝᡨᡠᠨ = 150               # ᡩᠣᠰᡳ — DPI resolution
+_ᡠᡵᡝ_ᡤᡝᠨ     = "Supre-me Illustrator v2.1"
 
 
 # ══════════════════════════════════════════════════════
-# 主類別  主類別  主類別
+# ᡧᡠ ᡴᡡᠪᡠᠯᡝᠨ — Main Class / 主類別
 # ══════════════════════════════════════════════════════
-class 格式轉換工具:     # ── Format Conversion Engine ──
+class 格式轉換工具:    # ᡤᡳᠰᡠᠨ ᡥᡝᡵᡤᡝᠨ ᠠᡤᡡᡵᠠ — Format Conversion Engine
     """
-    畫布 (canvas) 의 모든 벡터 요소를
-    .ai / .pdf 포맷으로 쌍방 변환하는 엔진.
+    ᡤᡝᠮᡠᠯᡝᠮᠪᡳ ᡝᠮᡝ ᡤᠠᠵᡳᠮᠪᡳ — Save & Load Engine
 
-    ◆ 儲存路徑 (저장 경로): filedialog 로 자동 선택
-    ◆ 載入路徑 (로드 경로): filedialog 로 자동 선택
+    .ai  ─ 儲存 : reportlab PDF → AI DSC 헤더 주입 → 진짜 .ai
+    .ai  ─ 載入 : Ghostscript 래스터화 → 캔버스
+    .pdf ─ 儲存 : reportlab 벡터 PDF
+    .pdf ─ 載入 : PyMuPDF(fitz) 래스터화 → 캔버스
     """
 
-    def __init__(self, 畫布: tk.Canvas):
-        self.畫布 = 畫布   # Canvas reference
+    def __init__(self, ᡥᡡᠸᠠᠨ: tk.Canvas):
+        # ᡥᡡᠸᠠᠨ = 畫布 = Canvas
+        self.ᡥᡡᠸᠠᠨ = ᡥᡡᠸᠠᠨ
 
     # ╔══════════════════════════════════════════════╗
-    # ║   儲存為 .ai  (Adobe Illustrator)            ║
+    # ║  儲存為 .ai  ─  ᡥᡝᡵᡤᡝᠨ ᡤᡝᠮᡠᠯᡝ               ║
     # ╚══════════════════════════════════════════════╝
     def 儲存_人工智慧格式(self):
         """
-        PostScript DSC 기반 .ai 파일 생성.
-        Convertio / Inkscape / Ghostscript 와 완전 호환.
+        ᡠᡵᡝᠮᡠᡨ ── AI 파일 저장 전략:
+        1. reportlab 으로 진짜 PDF 생성
+        2. AI DSC 호환 헤더를 파일 앞에 삽입
+        3. .ai 확장자로 저장
+        → Adobe Illustrator CS4+ / Inkscape / Convertio 모두 열 수 있음
         """
-        路徑 = filedialog.asksaveasfilename(
-            title="Adobe Illustrator 형식으로 저장",
+        ᠵᡠᡵᡤᠠᠨ = filedialog.asksaveasfilename(   # ᠵᡠᡵᡤᠠᠨ = path
+            title="Adobe Illustrator (.ai) 형식으로 저장",
             defaultextension=".ai",
             filetypes=[
                 ("Adobe Illustrator", "*.ai"),
-                ("PostScript",        "*.ps"),
                 ("모든 파일",          "*.*"),
             ]
         )
-        if not 路徑:
-            return
-
-        寬度 = self.畫布.winfo_width()   or 1600
-        高度 = self.畫布.winfo_height()  or 950
-
-        # ── PostScript DSC 헤더 (AI 호환) ──
-        行列 = []
-        行列.append("%!PS-Adobe-3.0")
-        行列.append("%%Creator: " + _創作者)
-        行列.append("%%Title: " + os.path.basename(路徑))
-        行列.append("%%CreationDate: " + __import__('datetime').datetime.now().strftime("%Y/%m/%d %H:%M:%S"))
-        行列.append(f"%%BoundingBox: 0 0 {寬度} {高度}")
-        行列.append(f"%%HiResBoundingBox: 0.0 0.0 {寬度}.0 {高度}.0")
-        行列.append("%%DocumentProcessColors: Black")
-        行列.append("%%DocumentSuppliedResources:")
-        行列.append("%%AI8_CreatorVersion: 8.0")
-        行列.append(f"%%AI9_PrintingDataBegin")
-        行列.append("%%EndComments")
-        行列.append("%%BeginProlog")
-        行列.append("/AI_save save def")
-        行列.append("%%EndProlog")
-        行列.append("%%Page: 1 1")
-        行列.append(f"{寬度} {高度} scale")
-        # ── 좌표계: PS는 하단이 원점, Tkinter는 상단 ──
-        行列.append(f"1 -1 scale  0 -{高度} translate")
-
-        # ── 각 캔버스 객체 순회 → PS 명령 생성 ──
-        for 物件 in self.畫布.find_all():
-            類型 = self.畫布.type(物件)
-            座標 = self.畫布.coords(物件)
-            設定 = self.畫布.itemconfig(物件)
-
-            線色 = 設定.get('outline', ['','','','',''])[-1] or \
-                   設定.get('fill',    ['','','','',''])[-1] or 'black'
-            填色 = 設定.get('fill',    ['','','','',''])[-1] or ''
-            寬線 = 設定.get('width',   ['','','','',''])[-1] or '1'
-
-            行列 += self._物件轉PostScript(類型, 座標, 線色, 填色, 寬線, 設定)
-
-        行列.append("AI_save restore")
-        行列.append("%%Trailer")
-        行列.append("%%EOF")
-
-        全文 = "\n".join(行列)
-        with open(路徑, "w", encoding="ascii", errors="replace") as 檔:
-            檔.write(全文)
-
-        messagebox.showinfo("저장 완료", f"Adobe Illustrator (.ai) 파일로 저장했습니다.\n{路徑}")
-
-    # ╔══════════════════════════════════════════════╗
-    # ║   載入 .ai                                   ║
-    # ╚══════════════════════════════════════════════╝
-    def 載入_人工智慧格式(self):
-        """
-        .ai 파일 로드.
-        ① fitz(PyMuPDF) 로 래스터화 → 화면 표시
-        ② 실패 시 PIL (Ghostscript 필요) fallback
-        모든 경우 캔버스에 이미지로 삽입됩니다.
-        """
-        路徑 = filedialog.askopenfilename(
-            title="Adobe Illustrator 파일 열기",
-            filetypes=[
-                ("Adobe Illustrator / PostScript", "*.ai *.eps *.ps"),
-                ("모든 파일", "*.*"),
-            ]
-        )
-        if not 路徑:
-            return
-
-        已載入 = False
-
-        # ── ① fitz 시도 ──
-        try:
-            import fitz  # PyMuPDF
-            文件 = fitz.open(路徑)
-            頁面 = 文件[0]
-            矩陣 = fitz.Matrix(_預設解析度 / 72, _預設解析度 / 72)
-            像素圖 = 頁面.get_pixmap(matrix=矩陣, alpha=False)
-            圖片資料 = 像素圖.tobytes("png")
-            已載入 = self._貼上圖片資料(圖片資料)
-            文件.close()
-        except Exception as 錯誤_fitz:
-            pass
-
-        # ── ② PIL + Ghostscript fallback ──
-        if not 已載入:
-            try:
-                from PIL import Image, ImageTk as _ITk
-                img = Image.open(路徑)
-                img.thumbnail((self.畫布.winfo_width() or 1200,
-                                self.畫布.winfo_height() or 900),
-                               Image.Resampling.LANCZOS)
-                buf = io.BytesIO()
-                img.save(buf, "PNG")
-                已載入 = self._貼上圖片資料(buf.getvalue())
-            except Exception as 錯誤_pil:
-                messagebox.showerror(
-                    "로드 실패",
-                    f".ai 파일을 열 수 없습니다.\n"
-                    f"Ghostscript 설치 후 다시 시도하세요.\n\n{錯誤_pil}"
-                )
-                return
-
-        if 已載入:
-            messagebox.showinfo("로드 완료",
-                                "Adobe Illustrator 파일을 캔버스에 불러왔습니다.")
-
-    # ╔══════════════════════════════════════════════╗
-    # ║   儲存為 .pdf  (reportlab 向量)              ║
-    # ╚══════════════════════════════════════════════╝
-    def 儲存_可攜式文件格式(self):
-        """
-        reportlab 을 이용해 캔버스 객체를 진짜 벡터 PDF로 저장.
-        선, 사각형, 타원, 텍스트 모두 PDF 벡터로 변환됨.
-        """
-        路徑 = filedialog.asksaveasfilename(
-            title="PDF로 저장",
-            defaultextension=".pdf",
-            filetypes=[("PDF 문서", "*.pdf"), ("모든 파일", "*.*")]
-        )
-        if not 路徑:
+        if not ᠵᡠᡵᡤᠠᠨ:
             return
 
         try:
             from reportlab.pdfgen import canvas as rl_canvas
             from reportlab.lib import colors as rl_colors
-            from reportlab.lib.units import pt
         except ImportError:
-            messagebox.showerror("오류", "reportlab 라이브러리가 필요합니다.\npip install reportlab")
+            messagebox.showerror("오류", "pip install reportlab")
             return
 
-        寬度 = float(self.畫布.winfo_width()  or 1600)
-        高度 = float(self.畫布.winfo_height() or 950)
+        ᠴᠣᡴᡡᠨ = float(self.ᡥᡡᠸᠠᠨ.winfo_width()  or 1600)  # ᠴᠣᡴᡡᠨ = width
+        ᡩᡝᡵᡤᡳ = float(self.ᡥᡡᠸᠠᠨ.winfo_height() or 950)   # ᡩᡝᡵᡤᡳ = height
 
-        畫布pdf = rl_canvas.Canvas(路徑, pagesize=(寬度, 高度))
+        # ── PDF를 메모리 버퍼에 생성 ──
+        ᠪᡠᡶᡝᡵ = io.BytesIO()   # ᠪᡠᡶᡝᡵ = buffer
+        ᠪᡡᡴᡡ  = rl_canvas.Canvas(ᠪᡠᡶᡝᡵ, pagesize=(ᠴᠣᡴᡡᠨ, ᡩᡝᡵᡤᡳ))
+        self._ᡴᠠᠨᡳᠪᠠᠰᠠ_ᡤᡝᠮᡠᠯᡝ(ᠪᡡᡴᡡ, ᠴᠣᡴᡡᠨ, ᡩᡝᡵᡤᡳ, rl_colors)   # 캔버스 객체 → PDF
+        ᠪᡡᡴᡡ.save()
+        ᠫᡩᡶ_ᡩᠠᡨᠠ = ᠪᡠᡶᡝᡵ.getvalue()
 
-        for 物件 in self.畫布.find_all():
-            類型 = self.畫布.type(物件)
-            座標 = self.畫布.coords(物件)
-            設定 = self.畫布.itemconfig(物件)
+        # ── Adobe Illustrator 호환 DSC 헤더 주입 ──
+        # 핵심: PDF 앞에 AI 메타 주석을 붙이면 Illustrator가 인식
+        import datetime
+        ᡩᠣᠸᠠ = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S")
 
-            線色字串 = 設定.get('outline', ['','','','',''])[-1]
-            填色字串 = 設定.get('fill',    ['','','','',''])[-1]
-            線寬    = float(設定.get('width', ['','','','','1'])[-1] or 1)
+        ᡥᡝᠠᡩᡝᡵ = (
+            f"%!PS-Adobe-3.0\n"
+            f"%%Creator: {_ᡠᡵᡝ_ᡤᡝᠨ}\n"
+            f"%%Title: {os.path.basename(ᠵᡠᡵᡤᠠᠨ)}\n"
+            f"%%CreationDate: {ᡩᠣᠸᠠ}\n"
+            f"%%BoundingBox: 0 0 {int(ᠴᠣᡴᡡᠨ)} {int(ᡩᡝᡵᡤᡳ)}\n"
+            f"%%HiResBoundingBox: 0.000 0.000 {ᠴᠣᡴᡡᠨ:.3f} {ᡩᡝᡵᡤᡳ:.3f}\n"
+            f"%%DocumentProcessColors: Cyan Magenta Yellow Black\n"
+            f"%%DocumentSuppliedResources:\n"
+            f"%%AI8_CreatorVersion: 16.0.0\n"
+            f"%%AI9_PrintingDataBegin\n"
+            f"%%EndComments\n"
+            f"%%BeginProlog\n"
+            f"%%EndProlog\n"
+            f"%%Page: 1 1\n"
+        ).encode("ascii")
 
-            # ── Tkinter → reportlab 색상 변환 ──
-            def _색변환(색_str, fallback="black"):
-                if not 색_str:
-                    return None
-                try:
-                    rgb = self.畫布.winfo_rgb(색_str)
-                    return rl_colors.Color(rgb[0]/65535, rgb[1]/65535, rgb[2]/65535)
-                except Exception:
-                    return rl_colors.black
+        ᡶᡡᡩᡶᡝᡵ = b"\n%%Trailer\n%%EOF\n"
 
-            # ── PDF 좌표: 하단 원점, Tkinter: 상단 원점 ──
-            def _y(tk_y): return 高度 - tk_y
+        # AI 파일 = DSC헤더 + PDF바이너리 + 푸터
+        with open(ᠵᡠᡵᡤᠠᠨ, "wb") as ᡶᠠᡭ:   # ᡶᠠᡭ = file
+            ᡶᠠᡭ.write(ᡥᡝᠠᡩᡝᡵ)
+            ᡶᠠᡭ.write(ᠫᡩᡶ_ᡩᠠᡨᠠ)
+            ᡶᠠᡭ.write(ᡶᡡᡩᡶᡝᡵ)
 
-            try:
-                if 類型 == "line" and len(座標) >= 4:
-                    畫布pdf.setStrokeColor(_색변환(線色字串 or 填色字串))
-                    畫布pdf.setLineWidth(線寬)
-                    畫布pdf.setLineCap(1)
-                    p = 畫布pdf.beginPath()
-                    p.moveTo(座標[0], _y(座標[1]))
-                    for i in range(2, len(座標)-1, 2):
-                        p.lineTo(座標[i], _y(座標[i+1]))
-                    畫布pdf.drawPath(p, stroke=1, fill=0)
-
-                elif 類型 == "rectangle" and len(座標) >= 4:
-                    x1,y1,x2,y2 = 座標[:4]
-                    畫布pdf.setStrokeColor(_색변환(線色字串))
-                    畫布pdf.setFillColor(_색변환(填色字串) if 填色字串 else rl_colors.Color(0,0,0,0))
-                    畫布pdf.setLineWidth(線寬)
-                    畫布pdf.rect(min(x1,x2), _y(max(y1,y2)),
-                                abs(x2-x1), abs(y2-y1),
-                                stroke=1 if 線色字串 else 0,
-                                fill=1 if 填色字串 else 0)
-
-                elif 類型 == "oval" and len(座標) >= 4:
-                    x1,y1,x2,y2 = 座標[:4]
-                    cx,cy = (x1+x2)/2, (y1+y2)/2
-                    rx,ry = abs(x2-x1)/2, abs(y2-y1)/2
-                    畫布pdf.setStrokeColor(_색변환(線色字串))
-                    畫布pdf.setFillColor(_색변환(填色字串) if 填色字串 else rl_colors.Color(0,0,0,0))
-                    畫布pdf.setLineWidth(線寬)
-                    畫布pdf.ellipse(cx-rx, _y(cy)-ry, cx+rx, _y(cy)+ry,
-                                   stroke=1, fill=1 if 填色字串 else 0)
-
-                elif 類型 == "text" and len(座標) >= 2:
-                    文字內容 = 設定.get('text', ['','','','',''])[-1]
-                    字型資訊  = 設定.get('font', ['','','','',''])[-1]
-                    畫布pdf.setFillColor(_색변환(填色字串 or "black"))
-                    try:
-                        字型大小 = int(str(字型資訊).split()[-1])
-                    except Exception:
-                        字型大小 = 12
-                    畫布pdf.setFont("Helvetica", max(6, 字型大小))
-                    畫布pdf.drawCentredString(座標[0], _y(座標[1]), 文字內容)
-
-            except Exception:
-                pass   # ── 개별 오브젝트 실패 무시 ──
-
-        畫布pdf.save()
-        messagebox.showinfo("저장 완료", f"PDF 파일로 저장했습니다.\n{路徑}")
+        messagebox.showinfo("저장 완료 ᡤᡝᠮᡠᠯᡝ",
+                            f"Adobe Illustrator (.ai) 파일을 저장했습니다:\n{ᠵᡠᡵᡤᠠᠨ}\n\n"
+                            f"Illustrator CS4+ / Inkscape / Convertio 에서 열 수 있습니다.")
 
     # ╔══════════════════════════════════════════════╗
-    # ║   載入 .pdf  (PyMuPDF → 畫布)               ║
+    # ║  載入 .ai  ─  ᡥᡝᡵᡤᡝᠨ ᡤᠠᠵᡳ                  ║
+    # ╚══════════════════════════════════════════════╝
+    def 載入_人工智慧格式(self):
+        """
+        ᡤᠠᠵᡳᠮᠪᡳ ── AI 파일 로드 전략:
+        [A] Ghostscript (설치됨✓) → 고품질 PNG 래스터화 → 캔버스
+        [B] PyMuPDF fitz fallback (PDF기반 .ai)
+        """
+        ᠵᡠᡵᡤᠠᠨ = filedialog.askopenfilename(
+            title="Adobe Illustrator 파일 열기",
+            filetypes=[
+                ("Adobe Illustrator / EPS / PostScript", "*.ai *.eps *.ps"),
+                ("모든 파일", "*.*"),
+            ]
+        )
+        if not ᠵᡠᡵᡤᠠᠨ:
+            return
+
+        # ── [A] Ghostscript 경로 ──
+        if _ᡤᠰ_ᠪᡳ_ᡝ:
+            ᠰᡠᡴᠰᡝᠰ = self._ᡤᠰ_ᡥᡡᠸᠠᠨ_ᡩᡝ(ᠵᡠᡵᡤᠠᠨ)
+            if ᠰᡠᡴᠰᡝᠰ:
+                messagebox.showinfo("로드 완료 ᡤᠠᠵᡳ",
+                                    "Adobe Illustrator 파일을 캔버스에 불러왔습니다.\n(Ghostscript 고품질 렌더링)")
+                return
+
+        # ── [B] fitz fallback ──
+        try:
+            import fitz
+            ᠪᡳᡨᡥᡝ = fitz.open(ᠵᡠᡵᡤᠠᠨ)
+            ᡥᠠᡶᡝ = ᠪᡳᡨᡥᡝ[0]
+            ᠮᠠᡨᡵᡳᡴᠰ = fitz.Matrix(_ᡩᠣᠰᡳ_ᡳᠯᡝᡨᡠᠨ/72, _ᡩᠣᠰᡳ_ᡳᠯᡝᡨᡠᠨ/72)
+            ᠫᡳᡴᠰ = ᡥᠠᡶᡝ.get_pixmap(matrix=ᠮᠠᡨᡵᡳᡴᠰ, alpha=False)
+            self._ᡳᠮᠠᡤᡝ_ᡩᡝ(ᠫᡳᡴᠰ.tobytes("png"))
+            ᠪᡳᡨᡥᡝ.close()
+            messagebox.showinfo("로드 완료 ᡤᠠᠵᡳ",
+                                "Adobe Illustrator 파일을 캔버스에 불러왔습니다.\n(PDF 기반 .ai, PyMuPDF 렌더링)")
+        except Exception as ᠣᠮᠰᡳ:   # ᠣᠮᠰᡳ = error
+            messagebox.showerror("로드 실패",
+                                 f"파일을 열 수 없습니다:\n{ᠣᠮᠰᡳ}")
+
+    # ╔══════════════════════════════════════════════╗
+    # ║  儲存為 .pdf  ─  ᡶᠠᡭ ᡤᡝᠮᡠᠯᡝ                 ║
+    # ╚══════════════════════════════════════════════╝
+    def 儲存_可攜式文件格式(self):
+        """ᠫᡩᡶ ᡤᡝᠮᡠᠯᡝᠮᠪᡳ — PDF로 벡터 저장 (reportlab)"""
+        ᠵᡠᡵᡤᠠᠨ = filedialog.asksaveasfilename(
+            title="PDF로 저장",
+            defaultextension=".pdf",
+            filetypes=[("PDF 문서", "*.pdf"), ("모든 파일", "*.*")]
+        )
+        if not ᠵᡠᡵᡤᠠᠨ:
+            return
+
+        try:
+            from reportlab.pdfgen import canvas as rl_canvas
+            from reportlab.lib import colors as rl_colors
+        except ImportError:
+            messagebox.showerror("오류", "pip install reportlab")
+            return
+
+        ᠴᠣᡴᡡᠨ = float(self.ᡥᡡᠸᠠᠨ.winfo_width()  or 1600)
+        ᡩᡝᡵᡤᡳ = float(self.ᡥᡡᠸᠠᠨ.winfo_height() or 950)
+
+        ᠪᡡᡴᡡ = rl_canvas.Canvas(ᠵᡠᡵᡤᠠᠨ, pagesize=(ᠴᠣᡴᡡᠨ, ᡩᡝᡵᡤᡳ))
+        self._ᡴᠠᠨᡳᠪᠠᠰᠠ_ᡤᡝᠮᡠᠯᡝ(ᠪᡡᡴᡡ, ᠴᠣᡴᡡᠨ, ᡩᡝᡵᡤᡳ, rl_colors)
+        ᠪᡡᡴᡡ.save()
+
+        messagebox.showinfo("저장 완료 ᡤᡝᠮᡠᠯᡝ",
+                            f"PDF 파일을 저장했습니다:\n{ᠵᡠᡵᡤᠠᠨ}")
+
+    # ╔══════════════════════════════════════════════╗
+    # ║  載入 .pdf  ─  ᡶᠠᡭ ᡤᠠᠵᡳ                    ║
     # ╚══════════════════════════════════════════════╝
     def 載入_可攜式文件格式(self):
-        """
-        PyMuPDF(fitz) 로 PDF 페이지를 래스터화 → 캔버스에 이미지 삽입.
-        멀티 페이지 PDF: 첫 번째 페이지 한 장 사용.
-        """
-        路徑 = filedialog.askopenfilename(
+        """ᠫᡩᡶ ᡤᠠᠵᡳᠮᠪᡳ — PDF 열기 (PyMuPDF 래스터화)"""
+        ᠵᡠᡵᡤᠠᠨ = filedialog.askopenfilename(
             title="PDF 파일 열기",
             filetypes=[("PDF 문서", "*.pdf"), ("모든 파일", "*.*")]
         )
-        if not 路徑:
+        if not ᠵᡠᡵᡤᠠᠨ:
             return
 
         try:
             import fitz
-            文件 = fitz.open(路徑)
-            total = len(文件)
+            ᠪᡳᡨᡥᡝ = fitz.open(ᠵᡠᡵᡤᠠᠨ)
+            ᡩᡡᡵᡝ_ᡨᠣᡶᡝ = len(ᠪᡳᡨᡥᡝ)
 
-            # ── 페이지 선택 (멀티 페이지 시 사용자 선택) ──
-            if total > 1:
-                페이지번호 = self._페이지_선택(total)
-            else:
-                페이지번호 = 0
+            ᠫᡥᡝᡵᡤᡳ = 0
+            if ᡩᡡᡵᡝ_ᡨᠣᡶᡝ > 1:
+                from tkinter import simpledialog
+                ᠪᡝ = simpledialog.askinteger(
+                    "ᡥᠠᡶᡝ ᠰᡝᠯᡝᠮᡝ (페이지 선택)",
+                    f"총 {ᡩᡡᡵᡝ_ᡨᠣᡶᡝ} 페이지.\n몇 번째 페이지? (1~{ᡩᡡᡵᡝ_ᡨᠣᡶᡝ})",
+                    minvalue=1, maxvalue=ᡩᡡᡵᡝ_ᡨᠣᡶᡝ, initialvalue=1
+                )
+                ᠫᡥᡝᡵᡤᡳ = (ᠪᡝ or 1) - 1
 
-            頁面 = 文件[페이지번호]
-            矩陣 = fitz.Matrix(_預設解析度/72, _預設解析度/72)
-            像素圖 = 頁面.get_pixmap(matrix=矩陣, alpha=False)
-            資料 = 像素圖.tobytes("png")
-            文件.close()
+            ᡥᠠᡶᡝ = ᠪᡳᡨᡥᡝ[ᠫᡥᡝᡵᡤᡳ]
+            ᠮᠠᡨᡵᡳᡴᠰ = fitz.Matrix(_ᡩᠣᠰᡳ_ᡳᠯᡝᡨᡠᠨ/72, _ᡩᠣᠰᡳ_ᡳᠯᡝᡨᡠᠨ/72)
+            ᠫᡳᡴᠰ = ᡥᠠᡶᡝ.get_pixmap(matrix=ᠮᠠᡨᡵᡳᡴᠰ, alpha=False)
+            self._ᡳᠮᠠᡤᡝ_ᡩᡝ(ᠫᡳᡴᠰ.tobytes("png"))
+            ᠪᡳᡨᡥᡝ.close()
 
-            if self._貼上圖片資料(資料):
-                messagebox.showinfo("로드 완료",
-                    f"PDF {페이지번호+1}/{total} 페이지를 캔버스에 불러왔습니다.")
-
+            messagebox.showinfo("로드 완료 ᡤᠠᠵᡳ",
+                                f"PDF {ᠫᡥᡝᡵᡤᡳ+1}/{ᡩᡡᡵᡝ_ᡨᠣᡶᡝ} 페이지를 캔버스에 불러왔습니다.")
         except ImportError:
-            messagebox.showerror("오류", "PyMuPDF 가 필요합니다.\npip install pymupdf")
-        except Exception as 錯誤:
-            messagebox.showerror("로드 실패", f"PDF 로드 중 오류 발생:\n{錯誤}")
+            messagebox.showerror("오류", "pip install pymupdf")
+        except Exception as ᠣᠮᠰᡳ:
+            messagebox.showerror("로드 실패", str(ᠣᠮᠰᡳ))
 
     # ══════════════════════════════════════════════════
-    # 私有輔助函數 (내부 헬퍼)
+    # ᡠᠯᡥᡳ ᡳᠴᡳ — Private Helpers / 私有方法
     # ══════════════════════════════════════════════════
-    def _물件轉PostScript(self, 類型, 座標, 線色, 填色, 寬線, 設定):
-        """◆ canvas 객체 → PostScript 명령 리스트 반환 ◆"""
-        return self._物件轉PostScript(類型, 座標, 線色, 填色, 寬線, 設定)
 
-    def _物件轉PostScript(self, 類型, 座標, 線色, 填色, 寬線, 設定):
-        行 = []
+    def _ᡤᠰ_ᡥᡡᠸᠠᠨ_ᡩᡝ(self, ᡶᠠᡭ_ᠵᡠᡵᡤᠠᠨ: str) -> bool:
+        """
+        ᡤᠰ ᡩᡝ ᡥᡡᠸᠠᠨ — Ghostscript 로 .ai/.eps 래스터화 → 캔버스 삽입
+        ᡤᠰ ᠠᡤᡡᡵᠠ ᠪᡝ ᡝᡴᠰᡳᡴᡡᡨᡳ ─ Execute GS and paste result
+        """
         try:
-            r,g,b = self._색상_RGB정규화(線色)
-            行.append(f"{r:.4f} {g:.4f} {b:.4f} setrgbcolor")
-            行.append(f"{寬線} setlinewidth")
-            行.append("1 setlinecap")
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as ᡨᡝᠮᡶ:
+                ᡨᡝᠮᡶ_ᠵᡠᡵᡤᠠᠨ = ᡨᡝᠮᡶ.name
 
-            if 類型 == "line" and len(座標) >= 4:
-                行.append("newpath")
-                行.append(f"{座標[0]:.2f} {座標[1]:.2f} moveto")
-                for i in range(2, len(座標)-1, 2):
-                    行.append(f"{座標[i]:.2f} {座標[i+1]:.2f} lineto")
-                行.append("stroke")
+            ᠴᠣᡴᡡᠨ = self.ᡥᡡᠸᠠᠨ.winfo_width()  or 1400
+            ᡩᡝᡵᡤᡳ = self.ᡥᡡᠸᠠᠨ.winfo_height() or 900
 
-            elif 類型 == "rectangle" and len(座標) >= 4:
-                x1,y1,x2,y2 = 座標[:4]
-                行.append("newpath")
-                行.append(f"{min(x1,x2):.2f} {min(y1,y2):.2f} moveto")
-                行.append(f"{max(x1,x2):.2f} {min(y1,y2):.2f} lineto")
-                行.append(f"{max(x1,x2):.2f} {max(y1,y2):.2f} lineto")
-                行.append(f"{min(x1,x2):.2f} {max(y1,y2):.2f} lineto")
-                行.append("closepath stroke")
+            # ── Ghostscript 명령 ──
+            ᠺᠣᠮᠠᠨᡩ = [
+                _ᡤᠰ_ᠵᡠᡵᡤᡝᠨ,
+                "-dBATCH",
+                "-dNOPAUSE",
+                "-dSAFER",
+                "-dNOPROMPT",
+                f"-sDEVICE=png16m",
+                f"-r{_ᡩᠣᠰᡳ_ᡳᠯᡝᡨᡠᠨ}",
+                f"-dDEVICEWIDTHPOINTS={ᠴᠣᡴᡡᠨ}",
+                f"-dDEVICEHEIGHTPOINTS={ᡩᡝᡵᡤᡳ}",
+                f"-sOutputFile={ᡨᡝᠮᡶ_ᠵᡠᡵᡤᠠᠨ}",
+                ᡶᠠᡭ_ᠵᡠᡵᡤᠠᠨ,
+            ]
 
-            elif 類型 == "oval" and len(座標) >= 4:
-                x1,y1,x2,y2 = 座標[:4]
-                cx,cy = (x1+x2)/2, (y1+y2)/2
-                rx,ry = abs(x2-x1)/2, abs(y2-y1)/2
-                行.append(f"matrix currentmatrix")
-                行.append(f"{cx:.2f} {cy:.2f} translate")
-                行.append(f"{rx:.2f} {ry:.2f} scale")
-                行.append("newpath 0 0 1 0 360 arc")
-                行.append("setmatrix stroke")
+            ᡵᡝᠰᡠᠯᡨ = subprocess.run(
+                ᠺᠣᠮᠠᠨᡩ,
+                capture_output=True, timeout=30
+            )
 
-            elif 類型 == "text" and len(座標) >= 2:
-                文字 = 設定.get('text', ['','','','',''])[-1]
-                字型 = 設定.get('font', ['','','','',''])[-1]
-                try:
-                    크기 = int(str(字型).split()[-1])
-                except Exception:
-                    크기 = 12
-                安全文字 = 文字.replace("(","\\(").replace(")","\\)").replace("\\","\\\\")
-                行.append(f"/Helvetica findfont {크기} scalefont setfont")
-                行.append(f"{座標[0]:.2f} {座標[1]:.2f} moveto")
-                行.append(f"({安全文字}) dup stringwidth pop 2 div neg 0 rmoveto")
-                행.append("show") if False else 行.append("show")
+            if ᡵᡝᠰᡠᠯᡨ.returncode != 0 or not os.path.exists(ᡨᡝᠮᡶ_ᠵᡠᡵᡤᠠᠨ):
+                return False
+
+            with open(ᡨᡝᠮᡶ_ᠵᡠᡵᡤᠠᠨ, "rb") as ᡶ:
+                ᠫᠨᡤ_ᡩᠠᡨᠠ = ᡶ.read()
+
+            os.unlink(ᡨᡝᠮᡶ_ᠵᡠᡵᡤᠠᠨ)
+            return self._ᡳᠮᠠᡤᡝ_ᡩᡝ(ᠫᠨᡤ_ᡩᠠᡨᠠ)
 
         except Exception:
-            pass
-        return 行
-
-    def _색상_RGB정규화(self, 색_str: str) -> tuple:
-        """◈ 색상 문자열 → (r, g, b) 0.0~1.0 ◈"""
-        if not 색_str:
-            return 0.0, 0.0, 0.0
-        try:
-            rgb = self.畫布.winfo_rgb(색_str)
-            return rgb[0]/65535.0, rgb[1]/65535.0, rgb[2]/65535.0
-        except Exception:
-            pass
-        # ── 기본 색상명 테이블 ──
-        _표 = {
-            "black": (0,0,0), "white": (1,1,1),
-            "red": (1,0,0), "green": (0,0.5,0),
-            "blue": (0,0,1), "yellow": (1,1,0),
-            "orange": (1,0.65,0), "purple": (0.5,0,0.5),
-        }
-        return _표.get(색_str.lower(), (0,0,0))
-
-    def _貼上圖片資料(self, png_bytes: bytes) -> bool:
-        """○ PNG 바이트 → PhotoImage → 캔버스 중앙 삽입 ○"""
-        try:
-            from PIL import Image, ImageTk
-            img = Image.open(io.BytesIO(png_bytes))
-            # ── 캔버스 크기에 맞게 축소 ──
-            w = self.畫布.winfo_width()  or 1400
-            h = self.畫布.winfo_height() or 900
-            img.thumbnail((w, h), Image.Resampling.LANCZOS)
-            tk_img = ImageTk.PhotoImage(img)
-
-            # ── 가비지 컬렉션 방지: 캔버스에 참조 저장 ──
-            if not hasattr(self.畫布, '_格式轉換_圖片快取'):
-                self.畫布._格式轉換_圖片快取 = []
-            self.畫布._格式轉換_圖片快取.append(tk_img)
-
-            cx, cy = (self.畫布.winfo_width() or 800) // 2, \
-                     (self.畫布.winfo_height() or 450) // 2
-            self.畫布.create_image(cx, cy, image=tk_img, anchor="center")
-            return True
-        except Exception as 錯誤:
-            messagebox.showerror("이미지 오류", str(錯誤))
             return False
 
-    def _페이지_선택(self, 전체_수: int) -> int:
-        """◇ 멀티 페이지 PDF — 간단한 페이지 선택 대화창 ◇"""
+    def _ᡴᠠᠨᡳᠪᠠᠰᠠ_ᡤᡝᠮᡠᠯᡝ(self, ᠪᡡᡴᡡ, ᠴᠣᡴᡡᠨ, ᡩᡝᡵᡤᡳ, rl_colors):
+        """
+        ᡴᠠᠨᡳᠪᠠᠰᠠ ᡩᡝ ᡥᡝᡵᡤᡝᠨ — 캔버스 객체 → reportlab PDF 명령 변환
+        ᡠᠯᡥᡳᠶᠠ ᡩᡝ ᡥᡡᠸᠠᠨ ᠪᡝ ᡴᡡᠨᡩᡠᠯᡝᠮᠪᡳ — iterate canvas items
+        """
+        def _ᠵᠠᠯᡳ(ᠬ: str, fallback=(0, 0, 0)):
+            """ᠬ ᠪᡝ ᡥᡝᡵᡤᡝᠨ — color string to (r,g,b) 0-1"""
+            if not ᠬ:
+                return None
+            try:
+                ᡵ, ᡤ, ᠪ = self.ᡥᡡᠸᠠᠨ.winfo_rgb(ᠬ)
+                return rl_colors.Color(ᡵ/65535, ᡤ/65535, ᠪ/65535)
+            except Exception:
+                return rl_colors.black
+
+        def _ᠶ(ᡨᡴ_ᠶ): return ᡩᡝᡵᡤᡳ - ᡨᡴ_ᠶ   # ᠶ ᠪᡝ ᠯᠠᡨᡠ — y-flip
+
+        for ᠣᠪᠵ in self.ᡥᡡᠸᠠᠨ.find_all():
+            ᡨᠣᡴᠣ = self.ᡥᡡᠸᠠᠨ.type(ᠣᠪᠵ)           # type
+            ᠵᠠ   = self.ᡥᡡᠸᠠᠨ.coords(ᠣᠪᠵ)          # coords
+            ᡝᡵᡤᡳ = self.ᡥᡡᠸᠠᠨ.itemconfig(ᠣᠪᠵ)      # config
+
+            ᡥᠣᠯᠣ_ᠬ = 设(ᡝᡵᡤᡳ, 'outline')   # outline color
+            ᡩᡳᠮᠪᡠ_ᠬ = 设(ᡝᡵᡤᡳ, 'fill')      # fill color
+            ᠨᡳᠶᠠᠨᠯᡳᠨ = float(设(ᡝᡵᡤᡳ, 'width') or 1)
+
+            try:
+                if ᡨᠣᡴᠣ == "line" and len(ᠵᠠ) >= 4:
+                    ᠪᡡᡴᡡ.setStrokeColor(_ᠵᠠᠯᡳ(ᡩᡳᠮᠪᡠ_ᠬ or ᡥᠣᠯᠣ_ᠬ))
+                    ᠪᡡᡴᡡ.setLineWidth(ᠨᡳᠶᠠᠨᠯᡳᠨ)
+                    ᡶ = ᠪᡡᡴᡡ.beginPath()
+                    ᡶ.moveTo(ᠵᠠ[0], _ᠶ(ᠵᠠ[1]))
+                    for ᡳ in range(2, len(ᠵᠠ)-1, 2):
+                        ᡶ.lineTo(ᠵᠠ[ᡳ], _ᠶ(ᠵᠠ[ᡳ+1]))
+                    ᠪᡡᡴᡡ.drawPath(ᡶ, stroke=1, fill=0)
+
+                elif ᡨᠣᡴᠣ == "rectangle" and len(ᠵᠠ) >= 4:
+                    x1,y1,x2,y2 = ᠵᠠ[:4]
+                    ᠪᡡᡴᡡ.setStrokeColor(_ᠵᠠᠯᡳ(ᡥᠣᠯᠣ_ᠬ))
+                    ᠪᡡᡴᡡ.setFillColor(_ᠵᠠᠯᡳ(ᡩᡳᠮᠪᡠ_ᠬ) or rl_colors.transparent)
+                    ᠪᡡᡴᡡ.setLineWidth(ᠨᡳᠶᠠᠨᠯᡳᠨ)
+                    ᠪᡡᡴᡡ.rect(min(x1,x2), _ᠶ(max(y1,y2)),
+                              abs(x2-x1), abs(y2-y1),
+                              stroke=1 if ᡥᠣᠯᠣ_ᠬ else 0,
+                              fill=1 if ᡩᡳᠮᠪᡠ_ᠬ else 0)
+
+                elif ᡨᠣᡴᠣ == "oval" and len(ᠵᠠ) >= 4:
+                    x1,y1,x2,y2 = ᠵᠠ[:4]
+                    cx,cy = (x1+x2)/2, (y1+y2)/2
+                    rx,ry = abs(x2-x1)/2, abs(y2-y1)/2
+                    ᠪᡡᡴᡡ.setStrokeColor(_ᠵᠠᠯᡳ(ᡥᠣᠯᠣ_ᠬ))
+                    ᠪᡡᡴᡡ.setFillColor(_ᠵᠠᠯᡳ(ᡩᡳᠮᠪᡠ_ᠬ) or rl_colors.transparent)
+                    ᠪᡡᡴᡡ.ellipse(cx-rx, _ᠶ(cy)-ry, cx+rx, _ᠶ(cy)+ry,
+                                 stroke=1, fill=1 if ᡩᡳᠮᠪᡠ_ᠬ else 0)
+
+                elif ᡨᠣᡴᠣ == "text" and len(ᠵᠠ) >= 2:
+                    ᡩᡝ = 设(ᡝᡵᡤᡳ, 'text')
+                    ᡶᠣᠨᡨ_ᡳ = 设(ᡝᡵᡤᡳ, 'font')
+                    ᠪᡡᡴᡡ.setFillColor(_ᠵᠠᠯᡳ(ᡩᡳᠮᠪᡠ_ᠬ or "black"))
+                    try:
+                        ᡴᡳᡴᡝ = int(str(ᡶᠣᠨᡨ_ᡳ).split()[-1])
+                    except Exception:
+                        ᡴᡳᡴᡝ = 12
+                    ᠪᡡᡴᡡ.setFont("Helvetica", max(6, ᡴᡳᡴᡝ))
+                    ᠪᡡᡴᡡ.drawCentredString(ᠵᠠ[0], _ᠶ(ᠵᠠ[1]), ᡩᡝ)
+
+            except Exception:
+                pass   # ᡠᠯᡥᡳ ᡳ ᡩᡡᠯᡝ — skip failed object
+
+        ᠪᡡᡴᡡ.showPage()
+
+    def _ᡳᠮᠠᡤᡝ_ᡩᡝ(self, ᠫᠨᡤ_ᡩᠠᡨᠠ: bytes) -> bool:
+        """
+        ᡳᠮᠠᡤᡝ ᡩᡝ ᡥᡡᠸᠠᠨ — PNG 바이트 → PhotoImage → 캔버스 중앙 삽입
+        ᡠᠯᡥᡳᠶᠠ ᡩᡝ ᡥᡡᠸᠠᠨ ᡩᡝ ᡤᡡᡵᡝ — attach image to canvas
+        """
         try:
-            from tkinter import simpledialog
-            선택 = simpledialog.askinteger(
-                "페이지 선택",
-                f"총 {전체_수} 페이지. 몇 번째 페이지를 불러오겠습니까? (1~{전체_수})",
-                minvalue=1, maxvalue=전체_수, initialvalue=1
-            )
-            return (선택 or 1) - 1
+            from PIL import Image, ImageTk
+            ᡳᠮᡤ = Image.open(io.BytesIO(ᠫᠨᡤ_ᡩᠠᡨᠠ))
+            ᠴ = self.ᡥᡡᠸᠠᠨ.winfo_width()  or 1400
+            ᡩ = self.ᡥᡡᠸᠠᠨ.winfo_height() or 900
+            ᡳᠮᡤ.thumbnail((ᠴ, ᡩ), Image.Resampling.LANCZOS)
+            ᡨᡴ_ᡳᠮᡤ = ImageTk.PhotoImage(ᡳᠮᡤ)
+
+            # 캐시 참조 유지 (GC 방지)
+            if not hasattr(self.ᡥᡡᠸᠠᠨ, '_ᡳᠮᠠᡤᡝ_ᡴᠠᡧ'):
+                self.ᡥᡡᠸᠠᠨ._ᡳᠮᠠᡤᡝ_ᡴᠠᡧ = []
+            self.ᡥᡡᠸᠠᠨ._ᡳᠮᠠᡤᡝ_ᡴᠠᡧ.append(ᡨᡴ_ᡳᠮᡤ)
+
+            self.ᡥᡡᠸᠠᠨ.create_image(ᠴ//2, ᡩ//2,
+                                    image=ᡨᡴ_ᡳᠮᡤ, anchor="center")
+            return True
         except Exception:
-            return 0
+            return False
+
+
+# ══════════════════════════════════════════════════════
+# ᠠᡤᡡᡵᠠ ᡤᡳᠰᡠᠨ — Helper / util functions
+# ══════════════════════════════════════════════════════
+def 设(ᡝᡵᡤᡳ: dict, ᡴᡝ: str, fallback: str = "") -> str:
+    """ᡝᡵᡤᡳ ᡩᡝ ᡴᡝ ᡤᠠᠵᡳ — get itemconfig value safely
+    ᡝᡵᡤᡳ = config dict, ᡴᡝ = key, fallback = default"""
+    try:
+        return str(ᡝᡵᡤᡳ.get(ᡴᡝ, ['','','','', fallback])[-1])
+    except Exception:
+        return fallback
