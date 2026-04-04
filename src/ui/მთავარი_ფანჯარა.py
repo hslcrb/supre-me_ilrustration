@@ -22,6 +22,7 @@ from src.tools.이미지_이미               import 이미지_도구_최고
 from src.tools.선택_선택                 import 선택_도구_최고
 from src.ui.폰트_팝업_𓏞                 import 폰트_팝업_최고
 from src.utils.格式_轉換_工具             import 格式轉換工具   # 繁體中文 AI/PDF 엔진
+from src.tools.ペン_베지어_𓍯             import ㅤペン_최고
 
 # ◆ 상수 (심볼은 값/주석에만 사용) ◆
 _TITLE  = "슈프리미 일러스트레이터 ◈ Professional Vector Engine v2.1"
@@ -71,7 +72,9 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
 
         # 繁體中文 格式轉換工具 — AI / PDF 엔진
         self.格式工具 = 格式轉換工具(self.티ლო)
-
+        
+        # ⠁⠂⠃ ベジェ 펜 도구 (투명 식별자 클래스)
+        self.펜_도구 = ㅤペン_최고(self.티ლო, self.역사_현황, self.레이어_관리)
         # ◈ 폰트 팝업 (선택 도구보다 먼저 생성) ◈
         self.폰트_팝업 = 폰트_팝업_최고(
             self.rооt, self.티ლო,
@@ -103,6 +106,8 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
         self.티ლო.bind("<Button-1>",        self._on_press)
         self.티ლო.bind("<B1-Motion>",       self._on_drag)
         self.티ლო.bind("<ButtonRelease-1>", self._on_release)
+        self.티ლო.bind("<Motion>",          self._on_motion)
+        self.티ლო.bind("<Button-3>",        self._on_press)
 
         # ◆ 네비게이션: 줌+팬 ◆
         self.티ლო.bind("<Button-2>",          self._pan_start)
@@ -195,8 +200,9 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
         bs = {"pady": 6, "padx": 10, "relief": tk.FLAT,
               "font": ("Malgun Gothic", 9, "bold")}
         btns = [
-            ("🖐 선택",    self._mode_select,                "#78350F"),
+            ("👶 선택",    self._mode_select,                "#78350F"),
             ("🎨 브러시",  self._mode_brush,                 "#14532D"),
+            ("✒️ 펜(베지어)", lambda: self._set_mode("펜"),       "#831843"),
             ("⬜ 상자",    lambda: self._mode_shape("rect"),  "#374151"),
             ("⚪ 원",      lambda: self._mode_shape("oval"),  "#374151"),
             ("📏 선",      lambda: self._mode_shape("line"),  "#374151"),
@@ -303,6 +309,10 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
     def _mode_text(self):
         self.현_모드 = "텍스트"
 
+    def _set_mode(self, m):
+        self.현_모드 = m
+        self.선택_도구.선택_해제()
+
     # ══════════════════════════════════
     # ◉ 이벤트 라우터 ◉
     # ══════════════════════════════════
@@ -322,6 +332,16 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
                 self.문자_도구.역ს_색상 = self.브러시.역ს_색상
                 self.문자_도구.역ს_크기 = self.브러시.역ს_크기
                 self.문자_도구.시작_액션(e)
+        elif self.현_모드 == "펜":
+            self.펜_도구.역ს_색상 = self.브러시.역ს_색상
+            self.펜_도구.역ს_크기 = self.브러시.역ს_크기
+            if e.num == 1: # 좌클릭
+                if not self.펜_도구.ሒ:
+                    self.펜_도구.開始_액션(e)
+                else:
+                    self.펜_도구.앵커_추가(e)
+            elif e.num == 3: # 우클릭
+                self.펜_도구.終了_액션()
 
     def _on_drag(self, e):
         if self.현_모드 == "선택":
@@ -330,6 +350,10 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
             self.브러시.그리기_동작(e)
         elif self.현_모드 == "형상":
             self.도형_도구.그리기_액션(e)
+
+    def _on_motion(self, e):
+        if self.현_모드 == "펜":
+            self.펜_도구.描画_액션(e)
 
     def _on_release(self, e):
         if self.현_모드 == "선택":
