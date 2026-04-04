@@ -23,6 +23,9 @@ from src.tools.선택_선택                 import 선택_도구_최고
 from src.ui.폰트_팝업_𓏞                 import 폰트_팝업_최고
 from src.utils.格式_轉換_工具             import 格式轉換工具   # 繁體中文 AI/PDF 엔진
 from src.tools.ペン_베지어_𓍯             import ㅤペン_최고
+from src.tools.직접선택_ለ             import 𝔄직접선택_최고
+from src.tools.정렬_ሀ                 import 𝔅정렬_엔진〮
+from src.tools.그라데이션_ሐ             import 𝔇그라데이션_최고
 
 # ◆ 상수 (심볼은 값/주석에만 사용) ◆
 _TITLE  = "슈프리미 일러스트레이터 ◈ Professional Vector Engine v2.1"
@@ -75,6 +78,11 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
         
         # ⠁⠂⠃ ベジェ 펜 도구 (투명 식별자 클래스)
         self.펜_도구 = ㅤペン_최고(self.티ლო, self.역사_현황, self.레이어_관리)
+        
+        # 𝔄 직접 선택 도구 / 𝔅 정렬 엔진 / 𝔇 그라데이션 엔진 (Fraktur)
+        self.직접선택_도구 = 𝔄직접선택_최고(self.티ლო, self.역사_현황)
+        self.정렬_엔진 = 𝔅정렬_엔진〮(self.티ლო, self.역사_현황)
+        self.그라데이션_엔진 = 𝔇그라데이션_최고(self.티ლო)
         # ◈ 폰트 팝업 (선택 도구보다 먼저 생성) ◈
         self.폰트_팝업 = 폰트_팝업_최고(
             self.rооt, self.티ლო,
@@ -120,6 +128,9 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
         # Z-인덱스 단축키
         self.rооt.bind("[", self._send_backward)
         self.rооt.bind("]", self._bring_forward)
+        # 그룹화 단축키
+        self.rооt.bind("<Control-g>", self._group_selected)
+        self.rооt.bind("<Control-G>", self._ungroup_selected)
 
     # ══════════════════════════════════
     # ◆ 메뉴 ◆
@@ -151,6 +162,23 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
         mbar.add_cascade(label="◆ 편집(E)", menu=em)
         em.add_command(label="실행 취소 (Ctrl+Z)", command=self.역사_현황.undo_취소)
         em.add_command(label="다시 실행",           command=self.역사_현황.redo_다시)
+        em.add_separator()
+        em.add_command(label="그룹 묶기 (Ctrl+G)",   command=self._group_selected)
+        em.add_command(label="그룹 해제 (Ctrl+Shift+G)", command=self._ungroup_selected)
+        em.add_separator()
+        # 𝔅 정렬 / 분포
+        em.add_command(label="◀ 좌측 정렬",       command=lambda: self.정렬_엔진.정렬_실행(self.선택_도구.о_목록, 'left'))
+        em.add_command(label="▶ 우측 정렬",       command=lambda: self.정렬_엔진.정렬_실행(self.선택_도구.о_목록, 'right'))
+        em.add_command(label="│ 수평 가운대 정렬", command=lambda: self.정렬_엔진.정렬_실행(self.선택_도구.о_목록, 'hcenter'))
+        em.add_command(label="▲ 상단 정렬",       command=lambda: self.정렬_엔진.정렬_실행(self.선택_도구.о_목록, 'top'))
+        em.add_command(label="▼ 하단 정렬",       command=lambda: self.정렬_엔진.정렬_실행(self.선택_도구.о_목록, 'bottom'))
+        em.add_command(label="─ 수직 가운대 정렬", command=lambda: self.정렬_엔진.정렬_실행(self.선택_도구.о_목록, 'vcenter'))
+        em.add_command(label="⇔ 수평 간격 동일",   command=lambda: self.정렬_엔진.정렬_실행(self.선택_도구.о_목록, 'dist_h'))
+        em.add_command(label="⇕ 수직 간격 동일",   command=lambda: self.정렬_엔진.정렬_실행(self.선택_도구.о_목록, 'dist_v'))
+        em.add_separator()
+        # 𝔇 그라데이션
+        em.add_command(label="🌈 선형 그라데이션 적용", command=self._apply_linear_gradient)
+        em.add_command(label="🔆 방사형 그라데이션 적용", command=self._apply_radial_gradient)
 
         # ◈ 캔버스 ◈
         cm = tk.Menu(mbar, tearoff=0)
@@ -201,6 +229,7 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
               "font": ("Malgun Gothic", 9, "bold")}
         btns = [
             ("👶 선택",    self._mode_select,                "#78350F"),
+            ("🤚 직접선택(노드)", lambda: self._set_mode("직접선택"), "#B45309"),
             ("🎨 브러시",  self._mode_brush,                 "#14532D"),
             ("✒️ 펜(베지어)", lambda: self._set_mode("펜"),       "#831843"),
             ("⬜ 상자",    lambda: self._mode_shape("rect"),  "#374151"),
@@ -290,6 +319,28 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
         if self.현_모드 == "선택" and self.선택_도구.현_선택_객체:
             self.레이어_관리.뒤로_보내기_Z(self.선택_도구.현_선택_객체)
 
+    def _group_selected(self, e=None):
+        if self.현_모드 == "선택" and len(self.선택_도구.о_목록) > 1:
+            self.레이어_관리.그룹_묶기_G(self.선택_도구.о_목록)
+            self.역사_현황.추가_기록(self.선택_도구.о_목록) # 그룹 상태 저장
+
+    def _ungroup_selected(self, e=None):
+        if self.현_모드 == "선택" and self.선택_도구.현_선택_객체:
+            self.레이어_관리.그룹_해제_G(self.선택_도구.현_선택_객체)
+            self.역사_현황.추가_기록([self.선택_도구.현_선택_객체])
+
+    def _apply_linear_gradient(self):
+        if self.현_모드 == "선택" and self.선택_도구.о_목록:
+            c1 = self.브러시.역ს_색상
+            for obj in self.선택_도구.о_목록:
+                self.그라데이션_엔진.𝔄플라이_그라데이션(obj, c1, "#FFFFFF", "linear")
+
+    def _apply_radial_gradient(self):
+        if self.현_모드 == "선택" and self.선택_도구.о_목록:
+            c1 = self.브러시.역ს_색상
+            for obj in self.선택_도구.о_목록:
+                self.그라데이션_엔진.𝔄플라이_그라데이션(obj, c1, "#FFFFFF", "radial")
+
     # ══════════════════════════════════
     # ◆ 모드 전환 ◆
     # ══════════════════════════════════
@@ -320,6 +371,8 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
         self.티ლო.focus_set()   # ◈ 키보드 포커스 강제
         if self.현_모드 == "선택":
             self.선택_도구.시작_액션(e)
+        elif self.현_모드 == "직접선택":
+            self.직접선택_도구.시작_액션(e)
         elif self.현_모드 == "자유":
             self.브러시.역ს_x = e.x
             self.브러시.역ს_y = e.y
@@ -346,6 +399,8 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
     def _on_drag(self, e):
         if self.현_모드 == "선택":
             self.선택_도구.그리기_액션(e)
+        elif self.현_모드 == "직접선택":
+            self.직접선택_도구.그리기_액션(e)
         elif self.현_모드 == "자유":
             self.브러시.그리기_동작(e)
         elif self.현_모드 == "형상":
@@ -358,6 +413,8 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
     def _on_release(self, e):
         if self.현_모드 == "선택":
             self.선택_도구.종료_액션(e)
+        elif self.현_모드 == "직접선택":
+            self.직접선택_도구.종료_액션(e)
         elif self.현_모드 == "자유":
             self.브러시.종료_동작(e)
         elif self.현_모드 == "형상":
