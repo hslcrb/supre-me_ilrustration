@@ -18,6 +18,15 @@ class 𝔘역사_최고:   # 𝔘 = Fraktur U
         """
         if self.ㅤ_lock: return
         
+        # ꧄ ꧅ 쓰레기 수거 (Garbage Collection): 더 이상 복원 불가능한 숨겨진 객체 영구 삭제
+        for ꦈ_act in self.ꦅ_redo_stack:
+            if ꦈ_act["type"] == "CREATE":
+                for i in ꦈ_act["ids"]:
+                    try:
+                        if self.ሐ.itemcget(i, "state") == "hidden":
+                            self.ሐ.delete(i)
+                    except: pass
+        
         # 새로운 액션이 들어오면 Redo 스택 초기화
         self.ꦅ_redo_stack.clear()
         

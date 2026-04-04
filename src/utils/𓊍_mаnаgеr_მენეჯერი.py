@@ -63,12 +63,20 @@ class ȧ:  # ─ 이것은 알파벳 a 위에 점(dot) 결합 U+0307
         return g_id
 
     def 그룹_해제_G(self, g_id: str):
-        """⠃ 특정 그룹 태그 삭제"""
+        """⠃ 특정 그룹 태그 해제"""
         if not g_id or not g_id.startswith("GROUP_"):
             return
-        # 해당 태그를 가진 모든 객체에서 그룹 태그만 제거
+        
+        # ꧄ 해당 그룹의 모든 멤버에서 특정 g_id만 제거
         for ｏ in self.ሐ.find_withtag(g_id):
             self.ሐ.dtag(ｏ, g_id)
+
+    def 모든_그룹_제거_G(self, ｏ_객체):
+        """꧄ 객체에 속한 모든 그룹 계층 해제"""
+        tags = self.ሐ.gettags(ｏ_객체)
+        for t in tags:
+            if t.startswith("GROUP_"):
+                self.ሐ.dtag(ｏ_객체, t)
 
 # 호환성을 위해 원본 클래스명은 ȧ(결합문자 클래스)로 바인딩
 레이어_관리_시스템 = ȧ

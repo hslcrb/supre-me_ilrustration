@@ -221,18 +221,18 @@ class 문자_도구_최고:   # ◈ 글자 도구 v4.0 — 투명 인라인
     # ══════════════════════════════════
     def _on_entry_focusout(self, event):
         """◇ FocusOut — 컨트롤로 이동 시 닫기 방지 ◇"""
+        # ꧄ ꧅ 포커스 트랜지션 처리 강화
         try:
-            focused = str(self.티ლო_캔버스.winfo_toplevel().focus_get())
-            # ◆ 크기 컨트롤 위젯으로 이동한 경우 닫지 않음 ◆
-            if self._ctrl_frame and focused.startswith(str(self._ctrl_frame)):
+            target = self.티ლო_캔버스.winfo_toplevel().focus_get()
+            if self._ctrl_frame and str(target).startswith(str(self._ctrl_frame)):
                 return
-        except Exception:
-            pass
+        except: pass
         self._commit()
 
     def _commit(self):
         """◉ 확정 → canvas text 생성/업데이트 ◉"""
-        if not self._entry:
+        if not self._entry or not self._entry.winfo_exists():
+            self._cleanup()
             return
 
         text = self._entry.get()

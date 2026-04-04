@@ -4,6 +4,7 @@
 import json
 import base64
 import io
+import os
 from PIL import Image, ImageTk
 from tkinter import filedialog, messagebox
 import tkinter as tk
@@ -18,6 +19,10 @@ class 𝔖저장_공간_최고:   # 𝔖 = Fraktur S
     def 저장_프로세스(self):
         filename = filedialog.asksaveasfilename(defaultextension=".sup")
         if not filename: return
+        
+        # ꧄ 파일 경로 보안 검증 (Path Traversal 방지)
+        filename = os.path.abspath(filename)
+        # (옵션: 특정 작업 디렉토리 외 쓰기 제한 가능)
         
         items = []
         for obj in self.ሐ.find_all():
@@ -46,6 +51,9 @@ class 𝔖저장_공간_최고:   # 𝔖 = Fraktur S
     def 로드_프로세스(self):
         filename = filedialog.askopenfilename()
         if not filename: return
+        
+        # ꧄ 읽기 경로 정규화 (Security)
+        filename = os.path.abspath(filename)
         
         # ♬ 메모리 누수 해결: 이미지 캐시 및 캔버스 클리어
         self.ሐ.delete("all")

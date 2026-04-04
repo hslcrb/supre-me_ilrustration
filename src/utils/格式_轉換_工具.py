@@ -26,27 +26,25 @@ from tkinter import filedialog, messagebox
 
 # Ghostscript 실행 파일 경로 자동 탐색
 def _ᡤᠰ_ᠵᡠᡵᡤᠠᠨ() -> str:  # gs_find
-    """ᡤᠰ ᠪᠠ ᠪᡠᠯᡠᠮᠪᡳ — Ghostscript 경로 탐색"""
-    # 이미 PATH에 있으면 우선
-    for candidate in ("gswin64c", "gswin32c", "gs"):
-        try:
-            r = subprocess.run([candidate, "-version"],
-                               capture_output=True, text=True, timeout=3)
-            if r.returncode == 0:
-                return candidate
-        except (FileNotFoundError, subprocess.TimeoutExpired):
-            pass
-
-    # Windows 설치 경로 탐색
+    """ᡤᠰ ᠪᠠ ᠪᡠᠯᡠᠮᠪᡳ — Ghostscript 경로 탐색 및 보안 검증"""
+    candidates = ["gswin64c", "gswin32c", "gs"]
+    
+    # Windows 설치 경로 탐색 패턴 추가
     patterns = [
         r"C:\Program Files\gs\gs*\bin\gswin64c.exe",
         r"C:\Program Files\gs\gs*\bin\gswin32c.exe",
-        r"C:\Program Files (x86)\gs\gs*\bin\gswin32c.exe",
     ]
     for pat in patterns:
         hits = sorted(glob.glob(pat), reverse=True)
-        if hits:
-            return hits[0]
+        candidates.extend(hits)
+
+    for cmd in candidates:
+        try:
+            # ꧄ 실행 전 버전 정보를 확인하여 실제 Ghostscript인지 검증 (Security)
+            r = subprocess.run([cmd, "-version"], capture_output=True, text=True, timeout=2)
+            if r.returncode == 0 and "Ghostscript" in r.stdout:
+                return cmd
+        except: pass
     return ""
 
 
