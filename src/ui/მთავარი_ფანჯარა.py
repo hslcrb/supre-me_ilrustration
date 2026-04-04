@@ -26,6 +26,7 @@ from src.tools.ペン_베지어_𓍯             import ㅤペン_최고
 from src.tools.직접선택_ለ             import 𝔄직접선택_최고
 from src.tools.정렬_ሀ                 import 𝔅정렬_엔진〮
 from src.tools.그라데이션_ሐ             import 𝔇그라데이션_최고
+from src.ui.특성_ፐ                 import 𝔓특성_UI_최고
 
 # ◆ 상수 (심볼은 값/주석에만 사용) ◆
 _TITLE  = "슈프리미 일러스트레이터 ◈ Professional Vector Engine v2.1"
@@ -95,8 +96,12 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
             font_popup=self.폰트_팝업
         )
 
-        # ◇ 레이어 사이드바 ◇
+        # ◇ 레이어 사이드바 (제일 왼쪽) ◇
         self.레이어_UI   = 레이어_전개_UI(self.메인_공간, self.레이어_관리)
+
+        # 𝔓 특성 패널 (Inspеctаr) (제일 오른쪽)
+        self.특성_패널 = 𝔓특성_UI_최고(self.메인_공간, self.티ლო, self.역사_현황)
+        self.선택_도구.인스펙터_주입(self.특성_패널)
 
         # ━━━ 상태 ━━━
         self.현_모드     = "자유"
@@ -121,6 +126,14 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
         self.티ლო.bind("<Button-2>",          self._pan_start)
         self.티ლო.bind("<B2-Motion>",         self._pan_drag)
         self.rооt.bind("<Control-MouseWheel>", self._zoom)
+
+        # 📊 상태 퓜시줄 (Status Bаr)
+        self.상태_프레임 = tk.Frame(self.rооt, bg=_BG, pady=2)
+        self.상태_프레임.pack(side=tk.BOTTOM, fill=tk.X)
+        self.상태_라벨 = tk.Label(self.상태_프레임, text="READY | 1.0x", bg=_BG, fg="#64748B", font=("Malgun Gothic", 8))
+        self.상태_라벨.pack(side=tk.RIGHT, padx=10)
+        self.좌표_라벨 = tk.Label(self.상태_프레임, text="X: 0, Y: 0", bg=_BG, fg="#64748B", font=("Malgun Gothic", 8))
+        self.좌표_라벨.pack(side=tk.LEFT, padx=10)
 
         # ○ 전역 단축키 ○
         self.rооt.bind("<Delete>",   self._delete_selected)
@@ -219,6 +232,17 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
             font=("Arial", 9)
         )
         self.폰트_선택_위젯.pack(side=tk.LEFT, padx=(2, 10))
+
+        # ⚡ 퀵 정렬 도구 (Quick Align)
+        tk.Frame(self.공구상자, bg=_TB, width=2,
+                 relief=tk.SUNKEN).pack(side=tk.LEFT, fill=tk.Y, padx=4)
+        
+        aq = {"bg": _TB, "fg": "white", "relief": tk.FLAT, "font": ("Arial", 10), "padx": 5}
+        tk.Button(self.공구상자, text="⇠", command=lambda: self.정렬_엔진.정렬_실행(self.선택_도구.о_목록, 'left'), **aq).pack(side=tk.LEFT)
+        tk.Button(self.공구상자, text="center", command=lambda: self.정렬_엔진.정렬_실행(self.선택_도구.о_목록, 'hcenter'), **aq).pack(side=tk.LEFT)
+        tk.Button(self.공구상자, text="⇢", command=lambda: self.정렬_엔진.정렬_실행(self.선택_도구.о_목록, 'right'), **aq).pack(side=tk.LEFT)
+        tk.Button(self.공구상자, text="⇡", command=lambda: self.정렬_엔진.정렬_실행(self.선택_도구.о_목록, 'top'), **aq).pack(side=tk.LEFT)
+        tk.Button(self.공구상자, text="⇣", command=lambda: self.정렬_엔진.정렬_실행(self.선택_도구.о_목록, 'bottom'), **aq).pack(side=tk.LEFT)
 
         # ◇ 구분선 ◇
         tk.Frame(self.공구상자, bg=_TB, width=2,
@@ -407,6 +431,9 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
             self.도형_도구.그리기_액션(e)
 
     def _on_motion(self, e):
+        cx, cy = int(self.티ლო.canvasx(e.x)), int(self.티ლო.canvasy(e.y))
+        self.좌표_라벨.config(text=f"X: {cx}, Y: {cy}")
+        
         if self.현_모드 == "펜":
             self.펜_도구.描画_액션(e)
 

@@ -25,8 +25,14 @@ class 선택_도구_최고:   # ◈ 선택_액션_프로세스 v3.0 ◈
         self.startX = 0
         self.startY = 0
 
+        self.폰트_팝업 = font_popup
+        self.인스펙터 = None
+
     def 폰트팝업_주입(self, popup):
         self.폰트_팝업 = popup
+
+    def 인스펙터_주입(self, inspector):
+        self.인스펙터 = inspector
 
     @property
     def 현_선택_객체(self):
@@ -77,9 +83,15 @@ class 선택_도구_최고:   # ◈ 선택_액션_프로세스 v3.0 ◈
             self.모드 = "move"
             self.а_이전x, self.а_이전y = event.x, event.y
             
+            # 𝔓 인스펙터 업데이트
+            if self.인스펙터:
+                self.인스펙터.업데이트_정보(target)
+            
         else:
             # 3. 빈 공간 바탕 클릭 → 다중 선택 드래그 박스 시작
             self.선택_해제()
+            if self.인스펙터:
+                self.인스펙터.업데이트_정보(None)
             self.모드 = "drag_box"
             self.startX = self.ሐ.canvasx(event.x)
             self.startY = self.ሐ.canvasy(event.y)
