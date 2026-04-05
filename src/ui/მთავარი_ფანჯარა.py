@@ -8,7 +8,7 @@ from tkinter import font as tkfont
 # ══════════════════════════════════════════════════
 
 from src.tools.키сть                   import 브러시_도구_기본
-from src.ui.палитра                     import 색상_팔레트_UI
+from src.ui.палитра                     import 𐎂_א_あ_अ_α_я_칠획_Палитра
 from src.ui.크기_조절기                  import 브러시_크기_최고
 from src.tools.형상_आकृति_𓀀            import 도형_도구_최고
 from src.tools.역사_इतिहास_𓀕           import 𝔘역사_최고
@@ -99,12 +99,17 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
             font_popup=self.폰트_팝업
         )
 
-        # ◇ 레이어 사이드바 (제일 왼쪽) ◇
-        self.레이어_UI   = 레이어_전개_UI(self.메인_공간, self.레이어_관리)
+        # ᄠᅳᆮ : 보기 좋게 오른쪽에 모아두ᄂᆞᆫ 기ᇑ이ᄅ라 (옛한글)
+        self.우측_공간 = tk.Frame(self.메인_공간, bg="#16213E", width=280)
+        self.우측_공간.pack(side=tk.RIGHT, fill=tk.Y)
+        self.우측_공간.pack_propagate(False)
 
-        # 𝔓 특성 패널 (Inspеctаr) (제일 오른쪽)
-        self.특성_패널 = 𝔓특성_UI_최고(self.메인_공간, self.티ლო, self.역사_현황)
+        # 𝔓 특성 패널 (Inspеctаr) (상단)
+        self.특성_패널 = 𝔓특성_UI_최고(self.우측_공간, self.티ლო, self.역사_현황)
         self.선택_도구.인스펙터_주입(self.특성_패널)
+
+        # ◇ 레이어 사이드바 (하단) ◇
+        self.레이어_UI   = 레이어_전개_UI(self.우측_공간, self.레이어_관리)
 
         # ━━━ 상태 ━━━
         self.현_모드     = "자유"
@@ -218,8 +223,8 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
     # ◉ 툴바 ◉
     # ══════════════════════════════════
     def _build_toolbar(self):
-        # ○ 색상 팔레트 + 크기 슬라이더 ○
-        self.팔레트_UI = 색상_팔레트_UI(self.공구상자, self.브러시)
+        # ᄠᅳᆮ : 칠ᄒᆞ고 긋ᄂᆞᆫ 빛ᄁᆞᆯ을 고르ᄂᆞᆫ 것이ᄅ라 (옛한글)
+        self.팔레트_UI = 𐎂_א_あ_अ_α_я_칠획_Палитра(self.공구상자, self.브러시, self.선택_도구)
         self.크기_UI   = 브러시_크기_최고(self.공구상자, self.브러시)
 
         # ◇ 구분선 ◇
