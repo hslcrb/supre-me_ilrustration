@@ -195,12 +195,13 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
         em.add_command(label="⇕ 수직 간격 동일",   command=lambda: self.정렬_엔진.정렬_실행(self.선택_도구.о_목록, 'dist_v'))
         em.add_separator()
         # 𝔇 그라데이션
-        em.add_command(label="🌈 선형 그라데이션 적용", command=self._apply_linear_gradient)
-        em.add_command(label="🔆 방사형 그라데이션 적용", command=self._apply_radial_gradient)
+        em.add_command(label="🌈 선형 그라데이션 적용 (Linear)", command=self._apply_linear_gradient)
+        em.add_command(label="🔆 방사형 그라데이션 적용 (Radial)", command=self._apply_radial_gradient)
+        em.add_command(label="✨ 자유형 그라데이션 적용 (Freeform)", command=self._apply_freeform_gradient)
 
         # ◈ 캔버스 ◈
         cm = tk.Menu(mbar, tearoff=0)
-        mbar.add_cascade(label="◈ 캔버스(C)", menu=cm)
+        mbar.add_cascade(label="캔버스 (Canvas)", menu=cm)
         cm.add_command(label="배경색 변경",  command=self.배경_도구.색상_변경)
         cm.add_command(label="그리드 토글",  command=self._toggle_grid)
 
@@ -208,10 +209,10 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
         # ᄠᅳᆮ : 도형을 정ᄒᆞᆫ 법ᄃᆡ로 ᄂᆞᆫᄒᆞ거나 합ᄒᆞᄂᆞᆫ 것이ᄅ라 (옛한글)
         # אבג あいう ሀ ሀ ለ क ख
         om = tk.Menu(mbar, tearoff=0)
-        mbar.add_cascade(label="𔓕 객체(O)", menu=om)
-        om.add_command(label="합치기 (Union) א", command=lambda: self.불리언_엔진.연산_실행(self.선택_도구.о_목록, 'union'))
-        om.add_command(label="빼기 (Subtract) あ", command=lambda: self.불리언_엔진.연산_실행(self.선택_도구.о_목록, 'subtract'))
-        om.add_command(label="교차 (Intersect) ሀ", command=lambda: self.불리언_엔진.연산_실행(self.선택_도구.о_목록, 'intersect'))
+        mbar.add_cascade(label="객체 (Object)", menu=om)
+        om.add_command(label="합치기 (Union)", command=lambda: self.불리언_엔진.연산_실행(self.선택_도구.о_목록, 'union'))
+        om.add_command(label="빼기 (Subtract)", command=lambda: self.불리언_엔진.연산_실행(self.선택_도구.о_목록, 'subtract'))
+        om.add_command(label="교차 (Intersect)", command=lambda: self.불리언_엔진.연산_실행(self.선택_도구.о_목록, 'intersect'))
 
     # ══════════════════════════════════
     # ◉ 툴바 ◉
@@ -371,14 +372,22 @@ class 畫板App:   # ◈ 메인 애플리케이션 ◈
         if self.현_모드 == "선택" and self.선택_도구.о_목록:
             c1 = self.브러시.역ს_색상
             for obj in self.선택_도구.о_목록:
-                self.그라데이션_엔진.𝔄플라이_그라데이션(obj, c1, "#FFFFFF", "linear")
+                self.그라데이션_엔진.𝔄플라이_그라데이션(obj, [c1, "#FFFFFF"], "linear")
             self.역사_현황.ꦆ_기록_추가("ATTR", self.선택_도구.о_목록)
 
     def _apply_radial_gradient(self):
         if self.현_모드 == "선택" and self.선택_도구.о_목록:
             c1 = self.브러시.역ს_색상
             for obj in self.선택_도구.о_목록:
-                self.그라데이션_엔진.𝔄플라이_그라데이션(obj, c1, "#FFFFFF", "radial")
+                self.그라데이션_엔진.𝔄플라이_그라데이션(obj, [c1, "#FFFFFF"], "radial")
+            self.역사_현황.ꦆ_기록_추가("ATTR", self.선택_도구.о_목록)
+
+    def _apply_freeform_gradient(self):
+        if self.현_모드 == "선택" and self.선택_도구.о_목록:
+            c1 = self.브러시.역ს_색상
+            # ᄠᅳᆮ : 자유롭게 점을 찍어 빛ᄁᆞᆯ을 ᄆᆡᆼᄀᆞᄂᆞᆫ 것이ᄅ라
+            for obj in self.선택_도구.о_목록:
+                self.그라데이션_엔진.𝔄플라이_그라데이션(obj, [c1, "#1D4ED8", "#10B981", "#FFFFFF"], "freeform")
             self.역사_현황.ꦆ_기록_추가("ATTR", self.선택_도구.о_목록)
 
     # ══════════════════════════════════
