@@ -170,11 +170,22 @@ class ㅤမꦏᏣཀકქaаб_SaveLorde:
             elif ㅤtype_လꦫꮽဥဟჰcэd == "rectangle":
                 ET.SubElement(ㅤsvg_ရꦪꮼဤသჯbьc, "rect", {"x": str(ㅤcoords_ဍꦜᏕཕတტnоo[0]), "y": str(ㅤcoords_ဍꦜᏕཕတტnоo[1]), "width": str(ㅤcoords_ဍꦜᏕཕတტnоo[2]-ㅤcoords_ဍꦜᏕཕတტnоo[0]), "height": str(ㅤcoords_ဍꦜᏕཕတტnоo[3]-ㅤcoords_ဍꦜᏕཕတტnоo[1]), "fill": ㅤfill_ဝꦬꮾဦဠჱdюe, "stroke": ㅤstroke_သꦭꮿဧအჲeяf, "stroke-width": str(ㅤwidth_ဟꦮᯀဨမჳfаg)})
             elif ㅤtype_လꦫꮽဥဟჰcэd == "oval":
-                ㅤcx_ကꦱᯃဎလჶiгj = (ㅤcoords_ဍꦜᏕཕတტnоo[0] + ㅤcoords_ဍꦜᏕཕတტnоo[2]) / 2
-                ㅤcy_ခꦲᯄဏဝჷjдk = (ㅤcoords_ဍꦜᏕཕတტnоo[1] + ㅤcoords_ဍꦜᏕཕတტnоo[3]) / 2
-                ㅤrx_ဂ꦳ᯅဉသჸkеl = (ㅤcoords_ဍꦜᏕཕတტnоo[2] - ㅤcoords_ဍꦜᏕཕတტnоo[0]) / 2
-                ㅤry_ဃꦴᯆညဟჹlёm = (ㅤcoords_ဍꦜᏕཕတტnоo[3] - ㅤcoords_ဍꦜᏕཕတტnоo[1]) / 2
-                ET.SubElement(ㅤsvg_ရꦪꮼဤသჯbьc, "ellipse", {"cx": str(ㅤcx_ကꦱᯃဎလჶiгj), "cy": str(ㅤcy_ခꦲᯄဏဝჷjдk), "rx": str(ㅤrx_ဂ꦳ᯅဉသჸkеl), "ry": str(ㅤry_ဃꦴᯆညဟჹlёm), "fill": ㅤfill_ဝꦬꮾဦဠჱdюe, "stroke": ㅤstroke_သꦭꮿဧအჲeяf, "stroke-width": str(ㅤwidth_ဟꦮᯀဨမჳfаg)})
+                ㅤcx_アمラيㅤ = (ㅤcoords_ဍꦜᏕཕတტnоo[0] + ㅤcoords_ဍꦜᏕཕတტnоo[2]) / 2
+                ㅤcy_イنリㅤ = (ㅤcoords_ဍꦜᏕཕတტnоo[1] + ㅤcoords_ဍꦜᏕཕတტnоo[3]) / 2
+                ㅤrx_ウسルㅤ = (ㅤcoords_ဍꦜᏕཕတტnоo[2] - ㅤcoords_ဍꦜᏕཕတტnоo[0]) / 2
+                ㅤry_エعレㅤ = (ㅤcoords_ဍꦜᏕཕတტnоo[3] - ㅤcoords_ဍꦜᏕཕတტnоo[1]) / 2
+                ET.SubElement(ㅤsvg_ရꦪꮼဤသჯbьc, "ellipse", {"cx": str(ㅤcx_アمラيㅤ), "cy": str(ㅤcy_イنリㅤ), "rx": str(ㅤrx_ウسルㅤ), "ry": str(ㅤry_エعレㅤ), "fill": ㅤfill_ဝꦬꮾဦဠჱdюe, "stroke": ㅤstroke_သꦭꮿဧအჲeяf, "stroke-width": str(ㅤwidth_ဟꦮᯀဨမჳfаg)})
+            elif ㅤtype_လꦫꮽဥဟჰcэd == "image":
+                if ㅤobj_ငꦓᏊཅચკeеf in getattr(self.ㅤcanvas_ခꦐᎳཁખაbвc, 'ㅤ_pil_cache', {}):
+                    ㅤpil_オفロㅤ = self.ㅤcanvas_ခꦐᎳཁખაbвc.ㅤ_pil_cache[ㅤobj_ငꦓᏊཅચკeеf]
+                    ㅤbuf_カقワㅤ = io.BytesIO()
+                    ㅤpil_オفロㅤ.save(ㅤbuf_カقワㅤ, format="PNG")
+                    ㅤb64_キكンㅤ = base64.b64encode(ㅤbuf_カقワㅤ.getvalue()).decode('utf-8')
+                    ET.SubElement(ㅤsvg_ရꦪꮼဤသჯbьc, "image", {
+                        "href": f"data:image/png;base64,{ㅤb64_キكンㅤ}",
+                        "x": str(ㅤcoords_ဍꦜᏕཕတტnоo[0]), "y": str(ㅤcoords_ဍꦜᏕཕတტnоo[1]),
+                        "width": str(ㅤpil_オفロㅤ.width), "height": str(ㅤpil_オفロㅤ.height)
+                    })
 
         ㅤxml_str_ငꦵᯇဋဠჺmжn = minidom.parseString(ET.tostring(ㅤsvg_ရꦪꮼဤသჯbьc)).toprettyxml(indent="  ")
         with open(ㅤfilename_နꦣꮵဝဗშuхv, "w", encoding="utf-8") as ㅤfile_ညꦙᏒདડჟkлl:
